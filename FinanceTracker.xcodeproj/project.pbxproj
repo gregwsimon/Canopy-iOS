@@ -1,0 +1,545 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9EDF1BB22F342CCB003E2E7D /* GoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EDF1BB12F342CCB003E2E7D /* GoalsView.swift */; };
+		A1000001000000000000001 /* FinanceTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001 /* FinanceTrackerApp.swift */; };
+		A1000002000000000000001 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002000000000000001 /* Models.swift */; };
+		A1000003000000000000001 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003000000000000001 /* APIClient.swift */; };
+		A1000004000000000000001 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000004000000000000001 /* AuthManager.swift */; };
+		A1000005000000000000001 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005000000000000001 /* KeychainHelper.swift */; };
+		A1000006000000000000001 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006000000000000001 /* LoginView.swift */; };
+		A1000007000000000000001 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007000000000000001 /* MainTabView.swift */; };
+		A1000008000000000000001 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008000000000000001 /* DashboardView.swift */; };
+		A1000009000000000000001 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000009000000000000001 /* TransactionsView.swift */; };
+		A100000A000000000000001 /* AddTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000A000000000000001 /* AddTransactionView.swift */; };
+		A100000B000000000000001 /* BudgetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000B000000000000001 /* BudgetsView.swift */; };
+		A100000C000000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000C000000000000001 /* SettingsView.swift */; };
+		B1000001000000000000001 /* ActivityCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000001000000000000001 /* ActivityCardView.swift */; };
+		B1000002000000000000001 /* FlowCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000002000000000000001 /* FlowCardView.swift */; };
+		B1000003000000000000001 /* GoalsCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000003000000000000001 /* GoalsCardView.swift */; };
+		B1000004000000000000001 /* HealthcareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000004000000000000001 /* HealthcareCardView.swift */; };
+		B1000005000000000000001 /* NetCashCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000005000000000000001 /* NetCashCardView.swift */; };
+		B1000006000000000000001 /* PulseCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000006000000000000001 /* PulseCardView.swift */; };
+		B1000007000000000000001 /* ReturnsCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000007000000000000001 /* ReturnsCardView.swift */; };
+		B1000008000000000000001 /* RingGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000008000000000000001 /* RingGaugeView.swift */; };
+		B1000009000000000000001 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000009000000000000001 /* StatusBadge.swift */; };
+		B100000A000000000000001 /* TreemapCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200000A000000000000001 /* TreemapCardView.swift */; };
+		B100000B000000000000001 /* HealthcareDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200000B000000000000001 /* HealthcareDetailView.swift */; };
+		B100000C000000000000001 /* ReturnsDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200000C000000000000001 /* ReturnsDetailView.swift */; };
+		C100000D000000000000001 /* FlexibleSpendingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C200000D000000000000001 /* FlexibleSpendingSheet.swift */; };
+		C100000E000000000000001 /* IncomeBreakdownSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C200000E000000000000001 /* IncomeBreakdownSheet.swift */; };
+		C100000F000000000000001 /* CategoryTransactionsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C200000F000000000000001 /* CategoryTransactionsSheet.swift */; };
+		C1000010000000000000001 /* SavingsGoalSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000010000000000000001 /* SavingsGoalSheet.swift */; };
+		C1000011000000000000001 /* TransactionEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000011000000000000001 /* TransactionEditSheet.swift */; };
+		C1000012000000000000001 /* GroupedCategoryPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000012000000000000001 /* GroupedCategoryPicker.swift */; };
+		D1000013000000000000001 /* SpendingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2000013000000000000001 /* SpendingDetailView.swift */; };
+		E1000014000000000000001 /* CreditTriageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000014000000000000001 /* CreditTriageView.swift */; };
+		E1000015000000000000001 /* WindfallBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000015000000000000001 /* WindfallBannerView.swift */; };
+		F1000016000000000000001 /* PendingRepaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2000016000000000000001 /* PendingRepaymentView.swift */; };
+		G1000017000000000000001 /* TransactionFinderSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = G2000017000000000000001 /* TransactionFinderSheet.swift */; };
+		G1000018000000000000001 /* AllocationAmountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = G2000018000000000000001 /* AllocationAmountSheet.swift */; };
+		H1000019000000000000001 /* AmortizeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = H2000019000000000000001 /* AmortizeSheet.swift */; };
+		H100001A000000000000001 /* SpreadDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = H200001A000000000000001 /* SpreadDetailView.swift */; };
+		I100001B000000000000001 /* MonthlyRecapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = I200001B000000000000001 /* MonthlyRecapView.swift */; };
+		J100001C000000000000001 /* SpreadEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = J200001C000000000000001 /* SpreadEditSheet.swift */; };
+		K100001D000000000000001 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = K200001D000000000000001 /* Theme.swift */; };
+		L100001E000000000000001 /* CanopyMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = L200001E000000000000001 /* CanopyMarkView.swift */; };
+		M100001F000000000000001 /* GoalTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = M200001F000000000000001 /* GoalTreeView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		9EDF1BB12F342CCB003E2E7D /* GoalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsView.swift; sourceTree = "<group>"; };
+		9EDF1BC02F3641D9003E2E7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A2000001000000000000001 /* FinanceTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinanceTrackerApp.swift; sourceTree = "<group>"; };
+		A2000002000000000000001 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A2000003000000000000001 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		A2000004000000000000001 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		A2000005000000000000001 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		A2000006000000000000001 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		A2000007000000000000001 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		A2000008000000000000001 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		A2000009000000000000001 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
+		A200000A000000000000001 /* AddTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTransactionView.swift; sourceTree = "<group>"; };
+		A200000B000000000000001 /* BudgetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetsView.swift; sourceTree = "<group>"; };
+		A200000C000000000000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A3000001000000000000001 /* FinanceTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FinanceTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2000001000000000000001 /* ActivityCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityCardView.swift; sourceTree = "<group>"; };
+		B2000002000000000000001 /* FlowCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowCardView.swift; sourceTree = "<group>"; };
+		B2000003000000000000001 /* GoalsCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsCardView.swift; sourceTree = "<group>"; };
+		B2000004000000000000001 /* HealthcareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthcareCardView.swift; sourceTree = "<group>"; };
+		B2000005000000000000001 /* NetCashCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetCashCardView.swift; sourceTree = "<group>"; };
+		B2000006000000000000001 /* PulseCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulseCardView.swift; sourceTree = "<group>"; };
+		B2000007000000000000001 /* ReturnsCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnsCardView.swift; sourceTree = "<group>"; };
+		B2000008000000000000001 /* RingGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingGaugeView.swift; sourceTree = "<group>"; };
+		B2000009000000000000001 /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
+		B200000A000000000000001 /* TreemapCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapCardView.swift; sourceTree = "<group>"; };
+		B200000B000000000000001 /* HealthcareDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthcareDetailView.swift; sourceTree = "<group>"; };
+		B200000C000000000000001 /* ReturnsDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReturnsDetailView.swift; sourceTree = "<group>"; };
+		C200000D000000000000001 /* FlexibleSpendingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlexibleSpendingSheet.swift; sourceTree = "<group>"; };
+		C200000E000000000000001 /* IncomeBreakdownSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomeBreakdownSheet.swift; sourceTree = "<group>"; };
+		C200000F000000000000001 /* CategoryTransactionsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryTransactionsSheet.swift; sourceTree = "<group>"; };
+		C2000010000000000000001 /* SavingsGoalSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsGoalSheet.swift; sourceTree = "<group>"; };
+		C2000011000000000000001 /* TransactionEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionEditSheet.swift; sourceTree = "<group>"; };
+		C2000012000000000000001 /* GroupedCategoryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedCategoryPicker.swift; sourceTree = "<group>"; };
+		D2000013000000000000001 /* SpendingDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendingDetailView.swift; sourceTree = "<group>"; };
+		E2000014000000000000001 /* CreditTriageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditTriageView.swift; sourceTree = "<group>"; };
+		E2000015000000000000001 /* WindfallBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindfallBannerView.swift; sourceTree = "<group>"; };
+		F2000016000000000000001 /* PendingRepaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingRepaymentView.swift; sourceTree = "<group>"; };
+		G2000017000000000000001 /* TransactionFinderSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionFinderSheet.swift; sourceTree = "<group>"; };
+		G2000018000000000000001 /* AllocationAmountSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllocationAmountSheet.swift; sourceTree = "<group>"; };
+		H2000019000000000000001 /* AmortizeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmortizeSheet.swift; sourceTree = "<group>"; };
+		H200001A000000000000001 /* SpreadDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpreadDetailView.swift; sourceTree = "<group>"; };
+		I200001B000000000000001 /* MonthlyRecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyRecapView.swift; sourceTree = "<group>"; };
+		J200001C000000000000001 /* SpreadEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpreadEditSheet.swift; sourceTree = "<group>"; };
+		K200001D000000000000001 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		L200001E000000000000001 /* CanopyMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanopyMarkView.swift; sourceTree = "<group>"; };
+		M200001F000000000000001 /* GoalTreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalTreeView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A4000001000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A5000001000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A5000002000000000000001 /* FinanceTracker */,
+				A5000003000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A5000002000000000000001 /* FinanceTracker */ = {
+			isa = PBXGroup;
+			children = (
+				9EDF1BC02F3641D9003E2E7D /* Info.plist */,
+				B3000001000000000000001 /* ComponentsNew */,
+				A2000001000000000000001 /* FinanceTrackerApp.swift */,
+				K200001D000000000000001 /* Theme.swift */,
+				A5000004000000000000001 /* Models */,
+				A5000005000000000000001 /* Services */,
+				A5000006000000000000001 /* Views */,
+			);
+			path = FinanceTracker;
+			sourceTree = "<group>";
+		};
+		A5000003000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A3000001000000000000001 /* FinanceTracker.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A5000004000000000000001 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A2000002000000000000001 /* Models.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A5000005000000000000001 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A2000003000000000000001 /* APIClient.swift */,
+				A2000004000000000000001 /* AuthManager.swift */,
+				A2000005000000000000001 /* KeychainHelper.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A5000006000000000000001 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				9EDF1BB12F342CCB003E2E7D /* GoalsView.swift */,
+				A2000006000000000000001 /* LoginView.swift */,
+				A2000007000000000000001 /* MainTabView.swift */,
+				A2000008000000000000001 /* DashboardView.swift */,
+				A2000009000000000000001 /* TransactionsView.swift */,
+				A200000A000000000000001 /* AddTransactionView.swift */,
+				A200000B000000000000001 /* BudgetsView.swift */,
+				E2000014000000000000001 /* CreditTriageView.swift */,
+				A200000C000000000000001 /* SettingsView.swift */,
+				B200000B000000000000001 /* HealthcareDetailView.swift */,
+				B200000C000000000000001 /* ReturnsDetailView.swift */,
+				D2000013000000000000001 /* SpendingDetailView.swift */,
+				F2000016000000000000001 /* PendingRepaymentView.swift */,
+				G2000017000000000000001 /* TransactionFinderSheet.swift */,
+				G2000018000000000000001 /* AllocationAmountSheet.swift */,
+				I200001B000000000000001 /* MonthlyRecapView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B3000001000000000000001 /* ComponentsNew */ = {
+			isa = PBXGroup;
+			children = (
+				B2000001000000000000001 /* ActivityCardView.swift */,
+				H2000019000000000000001 /* AmortizeSheet.swift */,
+				L200001E000000000000001 /* CanopyMarkView.swift */,
+				C200000F000000000000001 /* CategoryTransactionsSheet.swift */,
+				C200000D000000000000001 /* FlexibleSpendingSheet.swift */,
+				B2000002000000000000001 /* FlowCardView.swift */,
+				M200001F000000000000001 /* GoalTreeView.swift */,
+				B2000003000000000000001 /* GoalsCardView.swift */,
+				C2000012000000000000001 /* GroupedCategoryPicker.swift */,
+				B2000004000000000000001 /* HealthcareCardView.swift */,
+				C200000E000000000000001 /* IncomeBreakdownSheet.swift */,
+				B2000005000000000000001 /* NetCashCardView.swift */,
+				B2000006000000000000001 /* PulseCardView.swift */,
+				B2000007000000000000001 /* ReturnsCardView.swift */,
+				B2000008000000000000001 /* RingGaugeView.swift */,
+				C2000010000000000000001 /* SavingsGoalSheet.swift */,
+				H200001A000000000000001 /* SpreadDetailView.swift */,
+				J200001C000000000000001 /* SpreadEditSheet.swift */,
+				B2000009000000000000001 /* StatusBadge.swift */,
+				C2000011000000000000001 /* TransactionEditSheet.swift */,
+				B200000A000000000000001 /* TreemapCardView.swift */,
+				E2000015000000000000001 /* WindfallBannerView.swift */,
+			);
+			path = ComponentsNew;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A6000001000000000000001 /* FinanceTracker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A7000001000000000000001 /* Build configuration list for PBXNativeTarget "FinanceTracker" */;
+			buildPhases = (
+				A8000001000000000000001 /* Sources */,
+				A4000001000000000000001 /* Frameworks */,
+				A9000001000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FinanceTracker;
+			productName = FinanceTracker;
+			productReference = A3000001000000000000001 /* FinanceTracker.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A0000001000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					A6000001000000000000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A7000002000000000000001 /* Build configuration list for PBXProject "FinanceTracker" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A5000001000000000000001;
+			productRefGroup = A5000003000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A6000001000000000000001 /* FinanceTracker */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A9000001000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A8000001000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000001000000000000001 /* FinanceTrackerApp.swift in Sources */,
+				A1000002000000000000001 /* Models.swift in Sources */,
+				A1000003000000000000001 /* APIClient.swift in Sources */,
+				A1000004000000000000001 /* AuthManager.swift in Sources */,
+				A1000005000000000000001 /* KeychainHelper.swift in Sources */,
+				A1000006000000000000001 /* LoginView.swift in Sources */,
+				A1000007000000000000001 /* MainTabView.swift in Sources */,
+				A1000008000000000000001 /* DashboardView.swift in Sources */,
+				A1000009000000000000001 /* TransactionsView.swift in Sources */,
+				A100000A000000000000001 /* AddTransactionView.swift in Sources */,
+				A100000B000000000000001 /* BudgetsView.swift in Sources */,
+				A100000C000000000000001 /* SettingsView.swift in Sources */,
+				9EDF1BB22F342CCB003E2E7D /* GoalsView.swift in Sources */,
+				B1000001000000000000001 /* ActivityCardView.swift in Sources */,
+				B1000002000000000000001 /* FlowCardView.swift in Sources */,
+				B1000003000000000000001 /* GoalsCardView.swift in Sources */,
+				B1000004000000000000001 /* HealthcareCardView.swift in Sources */,
+				B1000005000000000000001 /* NetCashCardView.swift in Sources */,
+				B1000006000000000000001 /* PulseCardView.swift in Sources */,
+				B1000007000000000000001 /* ReturnsCardView.swift in Sources */,
+				B1000008000000000000001 /* RingGaugeView.swift in Sources */,
+				B1000009000000000000001 /* StatusBadge.swift in Sources */,
+				B100000A000000000000001 /* TreemapCardView.swift in Sources */,
+				B100000B000000000000001 /* HealthcareDetailView.swift in Sources */,
+				B100000C000000000000001 /* ReturnsDetailView.swift in Sources */,
+				C100000D000000000000001 /* FlexibleSpendingSheet.swift in Sources */,
+				C100000E000000000000001 /* IncomeBreakdownSheet.swift in Sources */,
+				C100000F000000000000001 /* CategoryTransactionsSheet.swift in Sources */,
+				C1000010000000000000001 /* SavingsGoalSheet.swift in Sources */,
+				C1000011000000000000001 /* TransactionEditSheet.swift in Sources */,
+				C1000012000000000000001 /* GroupedCategoryPicker.swift in Sources */,
+				D1000013000000000000001 /* SpendingDetailView.swift in Sources */,
+				E1000014000000000000001 /* CreditTriageView.swift in Sources */,
+				E1000015000000000000001 /* WindfallBannerView.swift in Sources */,
+				F1000016000000000000001 /* PendingRepaymentView.swift in Sources */,
+				G1000017000000000000001 /* TransactionFinderSheet.swift in Sources */,
+				G1000018000000000000001 /* AllocationAmountSheet.swift in Sources */,
+				H1000019000000000000001 /* AmortizeSheet.swift in Sources */,
+				H100001A000000000000001 /* SpreadDetailView.swift in Sources */,
+				I100001B000000000000001 /* MonthlyRecapView.swift in Sources */,
+				J100001C000000000000001 /* SpreadEditSheet.swift in Sources */,
+				K100001D000000000000001 /* Theme.swift in Sources */,
+				L100001E000000000000001 /* CanopyMarkView.swift in Sources */,
+				M100001F000000000000001 /* GoalTreeView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A7000003000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A7000004000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A7000005000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7GHH7WWU3K;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FinanceTracker/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.allielau.canopy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A7000006000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7GHH7WWU3K;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FinanceTracker/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.allielau.canopy;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A7000001000000000000001 /* Build configuration list for PBXNativeTarget "FinanceTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A7000005000000000000001 /* Debug */,
+				A7000006000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A7000002000000000000001 /* Build configuration list for PBXProject "FinanceTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A7000003000000000000001 /* Debug */,
+				A7000004000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A0000001000000000000001 /* Project object */;
+}

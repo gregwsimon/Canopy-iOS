@@ -195,7 +195,7 @@ struct FlowCardView: View {
 
                 ctx.fill(
                     Path(roundedRect: CGRect(x: rightBarX, y: blueTop, width: barW, height: blueH), cornerRadius: 3),
-                    with: .color(Theme.Colors.accent)
+                    with: .color(Theme.Colors.flexBlue)
                 )
 
                 if unspentH > 0 {
@@ -217,7 +217,7 @@ struct FlowCardView: View {
 
                 drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFixedTop, fromH: greenH * fixedFrac, toX: rightBarX, toTopY: greyTop, toH: greyH, color: Theme.Colors.textSecondary.opacity(0.12))
 
-                drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFlexTop, fromH: greenH * flexFrac, toX: rightBarX, toTopY: blueTop, toH: blueH, color: Theme.Colors.accent.opacity(0.10))
+                drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFlexTop, fromH: greenH * flexFrac, toX: rightBarX, toTopY: blueTop, toH: blueH, color: Theme.Colors.flexBlue.opacity(0.10))
 
                 if unspentH > 0 {
                     drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcUnspentTop, fromH: greenH * unspentFrac, toX: rightBarX, toTopY: unspentTop, toH: unspentH, color: Theme.Colors.textDisabled.opacity(0.08))

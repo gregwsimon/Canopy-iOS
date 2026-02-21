@@ -42,7 +42,7 @@ struct MainTabView: View {
                     Text("Settings")
                 }
         }
-        .tint(Theme.Colors.teal)
+        .tint(.primary)
         .onAppear {
             if !checkedRecapThisSession {
                 checkedRecapThisSession = true

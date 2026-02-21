@@ -19,6 +19,8 @@ struct MonthlyRecapView: View {
     @State private var allocating = false
     @State private var undoingId: Int? = nil
     @State private var needsAllocReset = false
+    @State private var toastError: String? = nil
+    @State private var toastSuccess: String? = nil
 
     private var isMidMonth: Bool { (recap?.recap_type ?? recapType) == "mid_month" }
     private var isSurplus: Bool { (recap?.surplus_deficit ?? 0) > 0 }
@@ -31,6 +33,11 @@ struct MonthlyRecapView: View {
     private var allocatedAmount: Double { allocations.reduce(0) { $0 + $1.amount } }
     private var remainingAmount: Double { max(totalAmount - allocatedAmount, 0) }
     private var isFullyAllocated: Bool { remainingAmount < 0.01 }
+    // True if recap was already allocated before this session (read-only mode)
+    private var isAlreadyAllocated: Bool {
+        let status = recap?.allocation_status ?? "pending"
+        return status == "complete" || status == "partial"
+    }
 
     var body: some View {
         NavigationStack {
@@ -45,6 +52,10 @@ struct MonthlyRecapView: View {
 
                             if isMidMonth, let mm = recap.mid_month_metrics {
                                 midMonthPaceSection(recap, metrics: mm)
+
+                                if let hist = mm.historical {
+                                    historicalComparisonSection(hist, dayOfMonth: mm.daysElapsed)
+                                }
                             }
 
                             // Allocation section right after hero, above "WHERE IT WENT"
@@ -83,6 +94,8 @@ struct MonthlyRecapView: View {
                 }
             }
             .background(Theme.Colors.background)
+            .toastError($toastError)
+            .toastSuccess($toastSuccess)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -229,6 +242,80 @@ struct MonthlyRecapView: View {
         .frame(maxWidth: .infinity)
     }
 
+    // MARK: - Historical Comparison
+
+    private func historicalComparisonSection(_ hist: HistoricalComparison, dayOfMonth: Int) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("VS PREVIOUS MONTHS")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(Theme.Colors.textMuted)
+                .tracking(1)
+
+            HStack {
+                Text("By day \(dayOfMonth) last month")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.Colors.textSecondary)
+                Spacer()
+                Text(Formatters.currency(hist.priorMonthSamePoint, decimals: false))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Theme.Colors.text)
+            }
+
+            HStack {
+                Text("Change vs last month")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.Colors.textSecondary)
+                Spacer()
+                let vsLast = hist.vsLastMonth
+                HStack(spacing: 3) {
+                    Image(systemName: vsLast > 0 ? "arrow.up.right" : vsLast < 0 ? "arrow.down.right" : "minus")
+                        .font(.system(size: 10))
+                    Text(String(format: "%.1f%%", abs(vsLast)))
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundColor(vsLast > 5 ? Theme.Colors.error : vsLast < -5 ? Theme.Colors.success : Theme.Colors.textSecondary)
+            }
+
+            HStack {
+                Text("vs 3-month average")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.Colors.textSecondary)
+                Spacer()
+                let vsAvg = hist.vsAverage
+                HStack(spacing: 3) {
+                    Image(systemName: vsAvg > 0 ? "arrow.up.right" : vsAvg < 0 ? "arrow.down.right" : "minus")
+                        .font(.system(size: 10))
+                    Text(String(format: "%.1f%%", abs(vsAvg)))
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundColor(vsAvg > 5 ? Theme.Colors.error : vsAvg < -5 ? Theme.Colors.success : Theme.Colors.textSecondary)
+            }
+
+            if let deltas = hist.topCategoryDeltas, !deltas.isEmpty {
+                Divider()
+                Text("BIGGEST CHANGES")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(Theme.Colors.textMuted)
+                    .tracking(0.5)
+
+                ForEach(deltas) { d in
+                    HStack {
+                        Text(d.name)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Theme.Colors.text)
+                            .lineLimit(1)
+                        Spacer()
+                        let isUp = d.delta > 0
+                        Text("\(isUp ? "+" : "")\(Formatters.currency(d.delta, decimals: false))")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(isUp ? Theme.Colors.error : Theme.Colors.success)
+                    }
+                }
+            }
+        }
+        .cardStyle()
+    }
+
     // MARK: - Allocation
 
     private func allocationSection(_ r: RecapData) -> some View {
@@ -247,41 +334,56 @@ struct MonthlyRecapView: View {
             if !allocations.isEmpty {
                 VStack(spacing: 6) {
                     ForEach(allocations) { alloc in
-                        allocationRow(alloc)
+                        allocationRow(alloc, readOnly: isAlreadyAllocated && !needsAllocReset)
                     }
                 }
             }
 
-            // Remaining indicator or complete badge
-            if isFullyAllocated {
-                HStack(spacing: 6) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(Theme.Colors.success)
-                        .font(.system(size: 14))
-                    Text("Fully allocated")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Theme.Colors.success)
-                }
-                .padding(.top, 4)
-            } else {
-                if !allocations.isEmpty {
-                    HStack {
-                        Text("Remaining")
-                            .font(.system(size: 11))
-                            .foregroundColor(Theme.Colors.textMuted)
-                        Spacer()
-                        Text(Formatters.currency(remainingAmount, decimals: false))
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(surplusColor)
+            if isAlreadyAllocated && !needsAllocReset {
+                // Read-only mode — allocation was made in a prior session
+                if isFullyAllocated {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(Theme.Colors.success)
+                            .font(.system(size: 14))
+                        Text("Fully allocated")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Theme.Colors.success)
                     }
-                    .padding(.top, 2)
+                    .padding(.top, 4)
                 }
-
-                // Active picker or type buttons
-                if let active = activePicker {
-                    allocationPickerView(active)
+            } else {
+                // Interactive mode — user can allocate
+                if isFullyAllocated {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(Theme.Colors.success)
+                            .font(.system(size: 14))
+                        Text("Fully allocated")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Theme.Colors.success)
+                    }
+                    .padding(.top, 4)
                 } else {
-                    allocationButtons()
+                    if !allocations.isEmpty {
+                        HStack {
+                            Text("Remaining")
+                                .font(.system(size: 11))
+                                .foregroundColor(Theme.Colors.textMuted)
+                            Spacer()
+                            Text(Formatters.currency(remainingAmount, decimals: false))
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(surplusColor)
+                        }
+                        .padding(.top, 2)
+                    }
+
+                    // Active picker or type buttons
+                    if let active = activePicker {
+                        allocationPickerView(active)
+                    } else {
+                        allocationButtons()
+                    }
                 }
             }
         }
@@ -324,9 +426,9 @@ struct MonthlyRecapView: View {
         Button {
             withAnimation(.easeInOut(duration: 0.2)) {
                 // For types that don't need a target, just allocate the remaining amount
-                if type == "bank_it" || type == "absorb_deficit" || type == "next_month_reduce" {
+                if type == "bank_it" || type == "absorb_deficit" {
                     submitAllocation(type: type, targetGoalId: nil, targetTransactionId: nil, amount: remainingAmount)
-                } else if type == "next_month_boost" {
+                } else if type == "next_month_boost" || type == "next_month_reduce" {
                     pickerAmount = String(format: "%.2f", remainingAmount)
                     pickerTarget = nil
                     activePicker = type
@@ -502,7 +604,7 @@ struct MonthlyRecapView: View {
         .padding(.top, 4)
     }
 
-    private func allocationRow(_ alloc: RecapAllocation) -> some View {
+    private func allocationRow(_ alloc: RecapAllocation, readOnly: Bool = false) -> some View {
         HStack(spacing: 8) {
             Image(systemName: allocationIcon(alloc.allocation_type))
                 .font(.system(size: 10))
@@ -524,19 +626,21 @@ struct MonthlyRecapView: View {
 
             Spacer()
 
-            Button {
-                undoAllocation(alloc)
-            } label: {
-                if undoingId == alloc.id {
-                    ProgressView()
-                        .scaleEffect(0.6)
-                } else {
-                    Text("Undo")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(Theme.Colors.error)
+            if !readOnly {
+                Button {
+                    undoAllocation(alloc)
+                } label: {
+                    if undoingId == alloc.id {
+                        ProgressView()
+                            .scaleEffect(0.6)
+                    } else {
+                        Text("Undo")
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(Theme.Colors.error)
+                    }
                 }
+                .disabled(undoingId != nil)
             }
-            .disabled(undoingId != nil)
         }
         .padding(.vertical, 6)
         .padding(.horizontal, 10)
@@ -866,6 +970,9 @@ struct MonthlyRecapView: View {
         if let txId = alloc.target_transaction_id {
             return spreadOptions.first(where: { $0.id == txId })?.description ?? "Spread"
         }
+        if alloc.allocation_type == "next_month_reduce" {
+            return "Payoff next month"
+        }
         return allocationLabel(alloc.allocation_type)
     }
 
@@ -895,7 +1002,7 @@ struct MonthlyRecapView: View {
                     )
                 }
             } catch {
-                print("Recap load error:", error)
+                toastError = "Failed to load recap"
             }
             loading = false
         }
@@ -915,7 +1022,7 @@ struct MonthlyRecapView: View {
                 allocations = []
                 loadRecap()
             } catch {
-                print("Regenerate error:", error)
+                toastError = "Failed to regenerate recap"
             }
             regenerating = false
         }
@@ -956,8 +1063,9 @@ struct MonthlyRecapView: View {
                         pickerAmount = ""
                     }
                 }
+                toastSuccess = "Allocation saved"
             } catch {
-                print("Allocate error:", error)
+                toastError = "Failed to save allocation"
             }
             allocating = false
         }
@@ -975,8 +1083,9 @@ struct MonthlyRecapView: View {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     allocations.removeAll { $0.id == alloc.id }
                 }
+                toastSuccess = "Allocation removed"
             } catch {
-                print("Undo error:", error)
+                toastError = "Failed to remove allocation"
             }
             undoingId = nil
         }

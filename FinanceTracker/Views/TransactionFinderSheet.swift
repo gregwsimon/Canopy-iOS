@@ -16,6 +16,7 @@ struct TransactionFinderSheet: View {
     @State private var results: [SearchTransaction] = []
     @State private var loading = true
     @State private var hasMore = true
+    @State private var toastError: String? = nil
 
     // Nested amount sheet state
     @State private var selectedTx: SearchTransaction? = nil
@@ -181,6 +182,7 @@ struct TransactionFinderSheet: View {
                 }
             }
             .background(Theme.Colors.background)
+            .toastError($toastError)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -348,14 +350,21 @@ struct TransactionFinderSheet: View {
                 params += "&credit_amount=\(credit.remainingAmount ?? credit.amount)"
 
                 let response: TransactionSearchResponse = try await APIClient.shared.request("/api/transactions/search?\(params)")
-                tagged = response.tagged
-                suggested = response.suggested
-                results = response.results
+                tagged = response.tagged.filter { !isFullyMatched($0) }
+                suggested = response.suggested.flatMap { isFullyMatched($0) ? nil : $0 }
+                results = response.results.filter { !isFullyMatched($0) }
             } catch {
-                print("Transaction search error:", error)
+                toastError = "Failed to search transactions"
             }
             loading = false
         }
+    }
+
+    private func isFullyMatched(_ tx: SearchTransaction) -> Bool {
+        if let remaining = tx.remainingAmount, remaining <= 0 { return true }
+        if type == "return" && tx.returnStatus == "received" && tx.remainingAmount == nil { return true }
+        if type == "healthcare" && tx.reimbursementStatus == "complete" && tx.remainingAmount == nil { return true }
+        return false
     }
 
     private func extendDateRange() {

@@ -4,6 +4,8 @@ struct GoalsView: View {
     @State private var goals: [Goal] = []
     @State private var loading = true
     @State private var showingAddSheet = false
+    @State private var toastError: String? = nil
+    @State private var toastSuccess: String? = nil
 
     var body: some View {
         NavigationStack {
@@ -27,7 +29,7 @@ struct GoalsView: View {
                         .padding(.top, 60)
                     } else {
                         ForEach(goals) { goal in
-                            GoalDetailCard(goal: goal, onUpdate: loadGoals)
+                            GoalDetailCard(goal: goal, onUpdate: loadGoals, onError: { toastError = $0 }, onSuccess: { toastSuccess = $0 })
                         }
                         .padding(.horizontal)
                     }
@@ -48,6 +50,8 @@ struct GoalsView: View {
             .sheet(isPresented: $showingAddSheet) {
                 AddGoalSheet(onSave: loadGoals)
             }
+            .toastError($toastError)
+            .toastSuccess($toastSuccess)
         }
         .onAppear { loadGoals() }
     }
@@ -59,7 +63,7 @@ struct GoalsView: View {
                 let response: GoalsResponse = try await APIClient.shared.request("/api/goals")
                 goals = response.goals
             } catch {
-                print("Goals load error:", error)
+                toastError = "Failed to load goals"
             }
             loading = false
         }
@@ -69,6 +73,8 @@ struct GoalsView: View {
 struct GoalDetailCard: View {
     let goal: Goal
     let onUpdate: () -> Void
+    var onError: ((String) -> Void)? = nil
+    var onSuccess: ((String) -> Void)? = nil
     @State private var showingEditSheet = false
     @State private var showingDeleteConfirm = false
     @State private var deleting = false
@@ -202,8 +208,9 @@ struct GoalDetailCard: View {
                     method: "DELETE"
                 )
                 onUpdate()
+                onSuccess?("Goal deleted")
             } catch {
-                print("Delete goal error:", error)
+                onError?("Failed to delete goal")
             }
             deleting = false
         }
@@ -228,6 +235,7 @@ struct AddGoalSheet: View {
     @State private var targetAmount = ""
     @State private var currentAmount = ""
     @State private var saving = false
+    @State private var error = ""
 
     var body: some View {
         NavigationStack {
@@ -248,6 +256,14 @@ struct AddGoalSheet: View {
                     TextField("Current Amount", text: $currentAmount)
                         .keyboardType(.decimalPad)
                 }
+
+                if !error.isEmpty {
+                    Section {
+                        Text(error)
+                            .font(Theme.Fonts.small)
+                            .foregroundColor(Theme.Colors.error)
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .background(Theme.Colors.background)
@@ -266,8 +282,24 @@ struct AddGoalSheet: View {
     }
 
     func saveGoal() {
-        guard let target = Double(targetAmount) else { return }
+        error = ""
+        guard let target = Double(targetAmount) else {
+            error = "Invalid target amount"
+            return
+        }
         let current = Double(currentAmount) ?? 0
+        guard target > 0 else {
+            error = "Target must be greater than zero"
+            return
+        }
+        guard current >= 0 else {
+            error = "Current amount can't be negative"
+            return
+        }
+        guard current <= target else {
+            error = "Current amount can't exceed target"
+            return
+        }
 
         saving = true
         Task {
@@ -292,7 +324,7 @@ struct AddGoalSheet: View {
                 onSave()
                 dismiss()
             } catch {
-                print("Save goal error:", error)
+                self.error = "Failed to save goal"
             }
             saving = false
         }
@@ -310,6 +342,7 @@ struct EditGoalSheet: View {
     @State private var hasDeadline: Bool
     @State private var deadline: Date
     @State private var saving = false
+    @State private var error = ""
 
     init(goal: Goal, onSave: @escaping () -> Void) {
         self.goal = goal
@@ -372,6 +405,14 @@ struct EditGoalSheet: View {
                     Text("Deadline").sectionHeaderStyle()
                 }
 
+                if !error.isEmpty {
+                    Section {
+                        Text(error)
+                            .font(Theme.Fonts.small)
+                            .foregroundColor(Theme.Colors.error)
+                    }
+                }
+
                 if goal.isPayoff == true {
                     Section {
                         HStack {
@@ -403,8 +444,28 @@ struct EditGoalSheet: View {
     }
 
     func saveGoal() {
-        guard let target = Double(targetAmount) else { return }
+        error = ""
+        guard let target = Double(targetAmount) else {
+            error = "Invalid target amount"
+            return
+        }
         let current = Double(currentAmount) ?? 0
+        guard target > 0 else {
+            error = "Target must be greater than zero"
+            return
+        }
+        guard current >= 0 else {
+            error = "Current amount can't be negative"
+            return
+        }
+        guard current <= target else {
+            error = "Current amount can't exceed target"
+            return
+        }
+        if hasDeadline && deadline < Date() {
+            error = "Deadline can't be in the past"
+            return
+        }
 
         saving = true
         Task {
@@ -432,7 +493,7 @@ struct EditGoalSheet: View {
                 onSave()
                 dismiss()
             } catch {
-                print("Update goal error:", error)
+                self.error = "Failed to update goal"
             }
             saving = false
         }

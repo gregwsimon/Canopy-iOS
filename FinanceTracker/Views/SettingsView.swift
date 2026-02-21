@@ -5,6 +5,8 @@ struct SettingsView: View {
     @State private var accounts: [Account] = []
     @State private var plaidItems: [PlaidItem] = []
     @State private var disconnecting: String?
+    @State private var toastError: String? = nil
+    @State private var toastSuccess: String? = nil
 
     var activeItems: [PlaidItem] {
         plaidItems.filter { $0.status != "revoked" }
@@ -84,6 +86,8 @@ struct SettingsView: View {
             .background(Theme.Colors.background)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
+            .toastError($toastError)
+            .toastSuccess($toastSuccess)
         }
         .onAppear { loadData() }
     }
@@ -94,7 +98,7 @@ struct SettingsView: View {
                 accounts = try await APIClient.shared.request("/api/accounts")
                 plaidItems = try await APIClient.shared.request("/api/plaid/items")
             } catch {
-                print("Load error:", error)
+                toastError = "Failed to load settings"
             }
         }
     }
@@ -109,8 +113,9 @@ struct SettingsView: View {
                     body: ["item_id": itemId]
                 )
                 loadData()
+                toastSuccess = "Bank disconnected"
             } catch {
-                print("Disconnect error:", error)
+                toastError = "Failed to disconnect bank"
             }
             disconnecting = nil
         }

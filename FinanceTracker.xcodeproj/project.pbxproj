@@ -51,6 +51,8 @@
 		K100001D000000000000001 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = K200001D000000000000001 /* Theme.swift */; };
 		L100001E000000000000001 /* CanopyMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = L200001E000000000000001 /* CanopyMarkView.swift */; };
 		M100001F000000000000001 /* GoalTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = M200001F000000000000001 /* GoalTreeView.swift */; };
+		N1000020000000000000001 /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = N2000020000000000000001 /* ToastView.swift */; };
+		O1000021000000000000001 /* RecapTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = O2000021000000000000001 /* RecapTabView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -100,6 +102,8 @@
 		K200001D000000000000001 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		L200001E000000000000001 /* CanopyMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanopyMarkView.swift; sourceTree = "<group>"; };
 		M200001F000000000000001 /* GoalTreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalTreeView.swift; sourceTree = "<group>"; };
+		N2000020000000000000001 /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
+		O2000021000000000000001 /* RecapTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecapTabView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,6 +184,7 @@
 				G2000017000000000000001 /* TransactionFinderSheet.swift */,
 				G2000018000000000000001 /* AllocationAmountSheet.swift */,
 				I200001B000000000000001 /* MonthlyRecapView.swift */,
+				O2000021000000000000001 /* RecapTabView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -206,6 +211,7 @@
 				H200001A000000000000001 /* SpreadDetailView.swift */,
 				J200001C000000000000001 /* SpreadEditSheet.swift */,
 				B2000009000000000000001 /* StatusBadge.swift */,
+				N2000020000000000000001 /* ToastView.swift */,
 				C2000011000000000000001 /* TransactionEditSheet.swift */,
 				B200000A000000000000001 /* TreemapCardView.swift */,
 				E2000015000000000000001 /* WindfallBannerView.swift */,
@@ -321,10 +327,12 @@
 				H1000019000000000000001 /* AmortizeSheet.swift in Sources */,
 				H100001A000000000000001 /* SpreadDetailView.swift in Sources */,
 				I100001B000000000000001 /* MonthlyRecapView.swift in Sources */,
+				O1000021000000000000001 /* RecapTabView.swift in Sources */,
 				J100001C000000000000001 /* SpreadEditSheet.swift in Sources */,
 				K100001D000000000000001 /* Theme.swift in Sources */,
 				L100001E000000000000001 /* CanopyMarkView.swift in Sources */,
 				M100001F000000000000001 /* GoalTreeView.swift in Sources */,
+				N1000020000000000000001 /* ToastView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -24,10 +24,10 @@ struct MainTabView: View {
                     Text("Transactions")
                 }
 
-            BudgetsView()
+            RecapTabView()
                 .tabItem {
-                    Image(systemName: "chart.pie")
-                    Text("Budgets")
+                    Image(systemName: "doc.text")
+                    Text("Recap")
                 }
 
             GoalsView()

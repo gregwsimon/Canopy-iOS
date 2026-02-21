@@ -24,6 +24,8 @@ struct CreditTriageView: View {
     @State private var categorySearch = ""
     @State private var revertingId: Int? = nil
     @State private var allocationToRevert: CreditSubAllocation? = nil
+    @State private var toastError: String? = nil
+    @State private var toastSuccess: String? = nil
 
     enum ActionMode {
         case offset, goal, income
@@ -59,6 +61,8 @@ struct CreditTriageView: View {
             }
         }
         .background(Theme.Colors.background)
+        .toastError($toastError)
+        .toastSuccess($toastSuccess)
         .navigationTitle("Credit Triage")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { loadData() }
@@ -720,7 +724,7 @@ struct CreditTriageView: View {
                 pendingReturns = response.pendingReturns
                 spreadItems = response.spreadItems ?? []
             } catch {
-                print("Credits load error:", error)
+                toastError = "Failed to load credits"
             }
             loading = false
         }
@@ -749,8 +753,9 @@ struct CreditTriageView: View {
                 activeCredit = nil
                 actionMode = nil
                 onAllocated?()
+                toastSuccess = "Allocated successfully"
             } catch {
-                print("Allocate error:", error)
+                toastError = "Allocation failed"
             }
             allocating = false
         }
@@ -767,8 +772,9 @@ struct CreditTriageView: View {
                 )
                 loadData()
                 onAllocated?()
+                toastSuccess = "Allocation reverted"
             } catch {
-                print("Revert error:", error)
+                toastError = "Failed to revert allocation"
             }
             revertingId = nil
         }

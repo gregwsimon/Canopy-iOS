@@ -78,6 +78,10 @@ struct AddTransactionView: View {
             error = "Invalid amount"
             return
         }
+        guard amountVal > 0 else {
+            error = "Amount must be greater than zero"
+            return
+        }
 
         let cat = categories.first(where: { $0.id == catId })
         let isExpense = cat?.category_type == "expense" || cat?.category_type == "pretax_deduction"

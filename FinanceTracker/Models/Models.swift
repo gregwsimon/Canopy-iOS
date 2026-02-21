@@ -346,6 +346,23 @@ struct MidMonthMetrics: Codable {
     let dailyBudgetNeeded: Double
     let onTrack: Bool
     let spendingPacePercent: Int
+    let historical: HistoricalComparison?
+}
+
+struct HistoricalComparison: Codable {
+    let priorMonthSamePoint: Double
+    let avgSamePoint: Double
+    let vsLastMonth: Double
+    let vsAverage: Double
+    let topCategoryDeltas: [CategoryDelta]?
+}
+
+struct CategoryDelta: Codable, Identifiable {
+    var id: String { name }
+    let name: String
+    let current: Double
+    let prior: Double
+    let delta: Double
 }
 
 struct RecapCategory: Codable, Identifiable {

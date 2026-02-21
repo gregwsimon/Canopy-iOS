@@ -2,15 +2,11 @@ import SwiftUI
 
 enum DashboardSheet: Identifiable {
     case income
-    case fixed
-    case flexible
     case savings
 
     var id: String {
         switch self {
         case .income: return "income"
-        case .fixed: return "fixed"
-        case .flexible: return "flexible"
         case .savings: return "savings"
         }
     }
@@ -161,10 +157,6 @@ struct DashboardView: View {
                             netIncome: data.summary.netIncome,
                             incomeBreakdown: data.incomeBreakdown
                         )
-                    case .fixed:
-                        EmptyView() // handled by navigation push
-                    case .flexible:
-                        EmptyView() // handled by navigation push
                     case .savings:
                         SavingsGoalSheet(month: month, onSave: { loadData() })
                     }

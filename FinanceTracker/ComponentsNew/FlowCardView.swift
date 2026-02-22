@@ -34,53 +34,6 @@ struct FlowCardView: View {
             if netIncome > 0 {
                 flowChart
 
-                // Callout items below the Sankey (not positioned in Canvas)
-                if healthcarePaidTotal > 0 || pendingReturns > 0 {
-                    Divider()
-                        .padding(.top, 2)
-
-                    VStack(spacing: 6) {
-                        if pendingReturns > 0 {
-                            Button { onRefundTap?() } label: {
-                                HStack(spacing: 6) {
-                                    Circle()
-                                        .fill(Theme.Colors.purple)
-                                        .frame(width: 7, height: 7)
-                                    Text("Refunds")
-                                        .font(.system(size: 12, weight: .medium))
-                                    Spacer()
-                                    Text(Formatters.currency(pendingReturns, decimals: false))
-                                        .font(.system(size: 12, weight: .medium))
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 8, weight: .semibold))
-                                        .foregroundColor(Theme.Colors.purple.opacity(0.5))
-                                }
-                                .foregroundColor(Theme.Colors.purple)
-                            }
-                            .buttonStyle(.plain)
-                        }
-
-                        if healthcarePaidTotal > 0 {
-                            Button { onNodeTap?("healthcare") } label: {
-                                HStack(spacing: 6) {
-                                    Circle()
-                                        .fill(Self.healthcareColor)
-                                        .frame(width: 7, height: 7)
-                                    Text("Healthcare")
-                                        .font(.system(size: 12, weight: .medium))
-                                    Spacer()
-                                    Text(healthcareAwaitingTotal > 0 ? Formatters.currency(healthcareAwaitingTotal, decimals: false) : "Settled")
-                                        .font(.system(size: 12, weight: .medium))
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 8, weight: .semibold))
-                                        .foregroundColor(Self.healthcareColor.opacity(0.5))
-                                }
-                                .foregroundColor(Self.healthcareColor)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
             } else {
                 Text("No flow data")
                     .font(.system(size: 12))

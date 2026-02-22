@@ -125,6 +125,67 @@ struct DashboardView: View {
                             NetCashCardView(metrics: netCash)
                                 .padding(.horizontal)
                         }
+
+                        // 4. Pending Healthcare & Returns callouts
+                        if data.healthcare.pendingReimbursement > 0 || (data.returns?.pendingAmount ?? 0) > 0 {
+                            HStack(spacing: 10) {
+                                if data.healthcare.pendingReimbursement > 0 {
+                                    Button {
+                                        healthcareNavActive = true
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "plus")
+                                                .font(.system(size: 11, weight: .semibold))
+                                                .foregroundColor(Color(hex: "#b45309"))
+                                            Text("Healthcare")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(Color(hex: "#b45309"))
+                                            Spacer()
+                                            Text(Formatters.currency(data.healthcare.pendingReimbursement, decimals: false))
+                                                .font(.system(size: 13, weight: .semibold))
+                                                .foregroundColor(Color(hex: "#b45309"))
+                                        }
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(Color(hex: "#fef3e2"))
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color(hex: "#fde68a"), lineWidth: 1)
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                                if (data.returns?.pendingAmount ?? 0) > 0 {
+                                    Button {
+                                        returnsNavActive = true
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "arrow.left")
+                                                .font(.system(size: 11, weight: .semibold))
+                                                .foregroundColor(Color(hex: "#7c3aed"))
+                                            Text("Returns")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(Color(hex: "#7c3aed"))
+                                            Spacer()
+                                            Text(Formatters.currency(data.returns!.pendingAmount, decimals: false))
+                                                .font(.system(size: 13, weight: .semibold))
+                                                .foregroundColor(Color(hex: "#7c3aed"))
+                                        }
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .background(Color(hex: "#f3e8ff"))
+                                        .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color(hex: "#e9d5ff"), lineWidth: 1)
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
                     } else {
                         Text("No data for this period")
                             .font(.system(size: 13))

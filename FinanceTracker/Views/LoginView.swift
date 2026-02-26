@@ -6,6 +6,8 @@ struct LoginView: View {
     @State private var password = ""
     
     var body: some View {
+        ZStack {
+        Theme.Colors.background.ignoresSafeArea()
         VStack(spacing: 0) {
             Spacer()
             
@@ -74,6 +76,6 @@ struct LoginView: View {
             Spacer()
         }
         .padding()
-        .background(Theme.Colors.background.ignoresSafeArea())
+        }
     }
 }

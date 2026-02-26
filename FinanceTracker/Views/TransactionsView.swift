@@ -254,6 +254,14 @@ struct TransactionsView: View {
                                         .foregroundColor(Theme.Colors.textDisabled)
                                 }
                             }
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 12)
+                            .background(Color.white)
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Theme.Colors.border, lineWidth: 1)
+                            )
                             .swipeActions(edge: .trailing) {
                                 Button("Delete", role: .destructive) {
                                     deleteTransaction(txn.id)
@@ -292,7 +300,9 @@ struct TransactionsView: View {
                                     .tint(Theme.Colors.flowCredits)
                                 }
                             }
-                            .listRowBackground(Theme.Colors.surfaceSolid)
+                            .listRowBackground(Theme.Colors.background)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 3, leading: 16, bottom: 3, trailing: 16))
                         }
 
                         // Total
@@ -305,7 +315,17 @@ struct TransactionsView: View {
                                 .font(.system(size: 14, weight: .bold, design: .monospaced))
                                 .foregroundColor(total >= 0 ? Theme.Colors.success : Theme.Colors.error)
                         }
-                        .listRowBackground(Theme.Colors.surfaceSolid)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 12)
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Theme.Colors.border, lineWidth: 1)
+                        )
+                        .listRowBackground(Theme.Colors.background)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 3, leading: 16, bottom: 3, trailing: 16))
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)

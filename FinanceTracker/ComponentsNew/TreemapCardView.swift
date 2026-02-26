@@ -6,10 +6,9 @@ struct TreemapCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("WHERE IT'S GOING")
-                .font(.system(size: 10, weight: .medium))
+            Text("Where it's going")
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(Theme.Colors.textMuted)
-                .tracking(1)
 
             if categories.isEmpty {
                 Text("No expenses yet")

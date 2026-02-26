@@ -9,38 +9,44 @@ struct RecapSheetItem: Identifiable {
 struct MainTabView: View {
     @State private var recapItem: RecapSheetItem?
     @State private var checkedRecapThisSession = false
+    @State private var selectedTab = 0
 
     var body: some View {
-        TabView {
-            DashboardView()
+        TabView(selection: $selectedTab) {
+            DashboardView(onGoalsTap: { selectedTab = 3 })
                 .tabItem {
                     Image(systemName: "chart.bar")
                     Text("Dashboard")
                 }
+                .tag(0)
 
             TransactionsView()
                 .tabItem {
                     Image(systemName: "list.bullet")
                     Text("Transactions")
                 }
+                .tag(1)
 
             RecapTabView()
                 .tabItem {
                     Image(systemName: "doc.text")
                     Text("Recap")
                 }
+                .tag(2)
 
             GoalsView()
                 .tabItem {
                     Image(systemName: "target")
                     Text("Goals")
                 }
+                .tag(3)
 
             SettingsView()
                 .tabItem {
                     Image(systemName: "gearshape")
                     Text("Settings")
                 }
+                .tag(4)
         }
         .tint(.primary)
         .onAppear {

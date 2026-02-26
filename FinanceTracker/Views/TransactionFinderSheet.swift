@@ -37,7 +37,7 @@ struct TransactionFinderSheet: View {
                         .font(.system(size: 14))
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
-                        .onChange(of: searchText) { _ in
+                        .onChange(of: searchText) { oldValue, newValue in
                             debounceSearch()
                         }
                     if !searchText.isEmpty {
@@ -128,7 +128,7 @@ struct TransactionFinderSheet: View {
                                 sectionHeader(
                                     type == "healthcare" ? "Pending Reimbursements" : "Pending Refunds",
                                     icon: "tag.fill",
-                                    color: type == "healthcare" ? Theme.Colors.warning : Theme.Colors.purple
+                                    color: type == "healthcare" ? Theme.Colors.flowCredits : Theme.Colors.flowPayoff
                                 )
                                 ForEach(tagged) { tx in
                                     Button { selectedTx = tx } label: {
@@ -171,7 +171,7 @@ struct TransactionFinderSheet: View {
                                         Text("Load older transactions")
                                             .font(.system(size: 12, weight: .medium))
                                     }
-                                    .foregroundColor(Color(hex: "#3b82f6"))
+                                    .foregroundColor(Theme.Colors.flowFlex)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 14)
                                 }
@@ -278,22 +278,22 @@ struct TransactionFinderSheet: View {
                             .cornerRadius(Theme.Radii.badge)
                     }
                     if type == "return" && tx.isReturn == true {
-                        statusPill("Return", color: Theme.Colors.purple)
+                        statusPill("Return", color: Theme.Colors.flowPayoff)
                     }
                     if type == "healthcare" && tx.isHealthcare == true {
-                        statusPill("HC", color: Theme.Colors.warning)
+                        statusPill("HC", color: Theme.Colors.flowCredits)
                     }
                 }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
-                Text(Formatters.currency(abs(tx.amount ?? 0)))
+                Text(Formatters.currency(abs(tx.amount)))
                     .font(.system(size: 14, weight: .semibold, design: .monospaced))
                     .foregroundColor(Theme.Colors.text)
-                if let remaining = tx.remainingAmount, remaining < abs(tx.amount ?? 0) {
+                if let remaining = tx.remainingAmount, remaining < abs(tx.amount) {
                     Text("\(Formatters.currency(remaining)) left")
                         .font(.system(size: 10))
-                        .foregroundColor(Theme.Colors.warning)
+                        .foregroundColor(Theme.Colors.flowCredits)
                 }
             }
             Image(systemName: "chevron.right")

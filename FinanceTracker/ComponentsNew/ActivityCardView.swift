@@ -5,10 +5,9 @@ struct ActivityCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("RECENT ACTIVITY")
-                .font(.system(size: 10, weight: .medium))
+            Text("Recent activity")
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(Theme.Colors.textMuted)
-                .tracking(1)
 
             if transactions.isEmpty {
                 Text("No recent transactions")
@@ -47,7 +46,7 @@ struct ActivityRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(transaction.description)
-                        .font(.system(size: 12))
+                        .font(.system(size: 14))
                         .foregroundColor(Theme.Colors.text)
                         .lineLimit(1)
 
@@ -61,7 +60,7 @@ struct ActivityRowView: View {
                 }
 
                 Text("\(transaction.categoryName) • \(Formatters.shortDate(transaction.date))")
-                    .font(.system(size: 10))
+                    .font(.system(size: 12))
                     .foregroundColor(Theme.Colors.textMuted)
             }
 
@@ -69,7 +68,7 @@ struct ActivityRowView: View {
 
             // Amount
             Text("\(transaction.amount < 0 ? "-" : "+")\(Formatters.currency(abs(transaction.amount), decimals: false))")
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 14, weight: .medium))
                 .foregroundColor(transaction.amount < 0 ? Theme.Colors.error : Theme.Colors.success)
         }
         .padding(.vertical, 8)
@@ -82,8 +81,8 @@ struct TagView: View {
     let bgColor: Color
 
     var body: some View {
-        Text(text.uppercased())
-            .font(.system(size: 8, weight: .medium))
+        Text(text)
+            .font(.system(size: 10, weight: .medium))
             .foregroundColor(color)
             .padding(.horizontal, 4)
             .padding(.vertical, 2)

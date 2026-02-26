@@ -5,6 +5,7 @@ struct SettingsView: View {
     @State private var accounts: [Account] = []
     @State private var plaidItems: [PlaidItem] = []
     @State private var disconnecting: String?
+    @State private var loading = true
     @State private var toastError: String? = nil
     @State private var toastSuccess: String? = nil
 
@@ -14,6 +15,14 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
+            if loading && accounts.isEmpty {
+                ZStack {
+                    Theme.Colors.background.ignoresSafeArea()
+                    ProgressView()
+                }
+                .navigationTitle("Settings")
+                .navigationBarTitleDisplayMode(.inline)
+            } else {
             List {
                 Section {
                     if activeItems.isEmpty {
@@ -86,20 +95,35 @@ struct SettingsView: View {
             .background(Theme.Colors.background)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
-            .toastError($toastError)
-            .toastSuccess($toastSuccess)
+            } // end if/else loading
         }
-        .onAppear { loadData() }
+        .toastError($toastError)
+        .toastSuccess($toastSuccess)
+        .onAppear { if accounts.isEmpty { loadData() } }
     }
 
     func loadData() {
+        // Show cached data instantly if available
+        if accounts.isEmpty {
+            if let cachedAccounts: [Account] = ResponseCache.shared.get("settings_accounts"),
+               let cachedItems: [PlaidItem] = ResponseCache.shared.get("settings_plaid") {
+                accounts = cachedAccounts
+                plaidItems = cachedItems
+                loading = false
+            }
+        }
         Task {
             do {
-                accounts = try await APIClient.shared.request("/api/accounts")
-                plaidItems = try await APIClient.shared.request("/api/plaid/items")
+                let freshAccounts: [Account] = try await APIClient.shared.request("/api/accounts")
+                let freshItems: [PlaidItem] = try await APIClient.shared.request("/api/plaid/items")
+                accounts = freshAccounts
+                plaidItems = freshItems
+                ResponseCache.shared.set("settings_accounts", value: freshAccounts)
+                ResponseCache.shared.set("settings_plaid", value: freshItems)
             } catch {
                 toastError = "Failed to load settings"
             }
+            loading = false
         }
     }
 

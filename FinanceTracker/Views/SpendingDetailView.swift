@@ -79,7 +79,7 @@ struct SpendingDetailView: View {
     private var summaryRow: some View {
         HStack {
             Text("Total")
-                .font(.system(size: 13))
+                .font(.system(size: 14))
                 .foregroundColor(Theme.Colors.textSecondary)
             Spacer()
             Text(Formatters.currency(totalSpent, decimals: false))

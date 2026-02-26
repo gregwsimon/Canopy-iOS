@@ -106,6 +106,7 @@ struct DashboardData: Codable {
     let savingsTarget: Double?
     let windfall: WindfallMetrics?
     let amortization: AmortizationMetrics?
+    let historicalPace: Double?
 }
 
 struct AmortizationMetrics: Codable {
@@ -148,6 +149,7 @@ struct DashboardSummary: Codable {
     let flexibleBudget: Double
     let flexibleRemaining: Double
     let daysRemaining: Int
+    let daysInMonth: Int?
     let dailyBudget: Double
 }
 
@@ -219,6 +221,8 @@ struct ReturnItem: Codable, Identifiable {
     let amount: Double
     let description: String?
     let return_status: String?
+    let returned_amount: Double?
+    let shortfall_amount: Double?
 }
 
 // MARK: - Goals
@@ -413,8 +417,8 @@ struct CreditItem: Codable, Identifiable {
     let description: String?
     let categoryName: String?
     let accountName: String?
-    let allocatedAmount: Double?
-    let remainingAmount: Double?
+    var allocatedAmount: Double?
+    var remainingAmount: Double?
     let allocations: [CreditSubAllocation]?
 }
 

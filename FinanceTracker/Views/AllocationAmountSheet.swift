@@ -66,7 +66,7 @@ struct AllocationAmountSheet: View {
                     if creditRemaining < credit.amount {
                         Text("Remaining: \(Formatters.currency(creditRemaining))")
                             .font(.system(size: 12))
-                            .foregroundColor(Theme.Colors.warning)
+                            .foregroundColor(Theme.Colors.flowCredits)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -89,13 +89,13 @@ struct AllocationAmountSheet: View {
                         Text(tx.description ?? "Transaction")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Theme.Colors.text)
-                        Text(Formatters.currency(abs(tx.amount ?? 0)))
+                        Text(Formatters.currency(abs(tx.amount)))
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(Theme.Colors.error)
-                        if let remaining = tx.remainingAmount, remaining < abs(tx.amount ?? 0) {
+                        if let remaining = tx.remainingAmount, remaining < abs(tx.amount) {
                             Text("Unmatched: \(Formatters.currency(remaining))")
                                 .font(.system(size: 12))
-                                .foregroundColor(Theme.Colors.warning)
+                                .foregroundColor(Theme.Colors.flowCredits)
                         }
                     }
                     .frame(maxWidth: .infinity)

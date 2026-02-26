@@ -5,10 +5,9 @@ struct GoalsCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("GOALS")
-                .font(.system(size: 10, weight: .medium))
+            Text("Goals")
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(Theme.Colors.textMuted)
-                .tracking(1)
 
             if goals.isEmpty {
                 VStack(spacing: 6) {
@@ -57,19 +56,19 @@ struct GoalRowView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(goal.name)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Theme.Colors.text)
                     .lineLimit(1)
 
                 Text("\(formatCompact(goal.currentAmount)) / \(formatCompact(goal.targetAmount))")
-                    .font(.system(size: 10))
+                    .font(.system(size: 12))
                     .foregroundColor(Theme.Colors.textMuted)
             }
 
             Spacer()
 
             Text("\(Int(progress * 100))%")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(color)
         }
     }

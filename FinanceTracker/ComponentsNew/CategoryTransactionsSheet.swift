@@ -87,7 +87,7 @@ struct CategoryTransactionsSheet: View {
                                     }
                                     if txn.is_healthcare == true, let rs = txn.reimbursement_status, rs != "none" {
                                         if rs == "partial" {
-                                            StatusBadge(text: "Partial", textColor: Theme.Colors.warning, bgColor: Theme.Colors.warningBg)
+                                            StatusBadge(text: "Partial", textColor: Theme.Colors.flowCredits, bgColor: Theme.Colors.flowCredits.opacity(0.12))
                                             StatusBadge(text: "Reimbursed", textColor: Theme.Colors.success, bgColor: Theme.Colors.successBg)
                                         } else {
                                             StatusBadge.forHealthcare(rs)
@@ -132,12 +132,12 @@ struct CategoryTransactionsSheet: View {
                             Button { undoReturn(txn) } label: {
                                 Image(systemName: "arrow.uturn.right")
                             }
-                            .tint(Theme.Colors.warning)
+                            .tint(Theme.Colors.flowCredits)
                         } else {
                             Button { toggleReturn(txn) } label: {
                                 Image(systemName: "arrow.uturn.left")
                             }
-                            .tint(Theme.Colors.purple)
+                            .tint(Theme.Colors.flowPayoff)
                         }
                     }
                 }

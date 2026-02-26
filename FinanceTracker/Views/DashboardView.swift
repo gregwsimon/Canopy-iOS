@@ -1,25 +1,16 @@
 import SwiftUI
 
-enum DashboardSheet: Identifiable {
-    case income
-    case savings
-
-    var id: String {
-        switch self {
-        case .income: return "income"
-        case .savings: return "savings"
-        }
-    }
-}
-
 struct DashboardView: View {
+    var onGoalsTap: (() -> Void)?
     @State private var month = Self.currentMonth()
     @State private var isYTD = false
     @State private var dashboardData: DashboardData?
     @State private var loading = true
-    @State private var activeSheet: DashboardSheet?
+    @State private var incomeNavActive = false
+    @State private var savingsNavActive = false
     @State private var healthcareNavActive = false
     @State private var returnsNavActive = false
+    @State private var pendingRefundsNavActive = false
     @State private var refundNavActive = false
     @State private var flexibleNavActive = false
     @State private var fixedNavActive = false
@@ -30,198 +21,148 @@ struct DashboardView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 12) {
-                    // Month picker
-                    HStack {
-                        Button(action: { adjustMonth(-1) }) {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(Theme.Colors.textSecondary)
-                        }
-
-                        Text(isYTD ? "\(month.prefix(4)) YTD" : Formatters.monthLabel(month))
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Theme.Colors.text)
-
-                        Button(action: { adjustMonth(1) }) {
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(Theme.Colors.textSecondary)
-                        }
-
-                        Spacer()
-
-                        Button(isYTD ? "Month" : "YTD") {
-                            isYTD.toggle()
-                            loadData()
-                        }
-                        .font(.system(size: 12, weight: .medium))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color.white)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(Theme.Colors.border, lineWidth: 1)
-                        )
+            VStack(spacing: 0) {
+                // Month picker — pinned at top
+                HStack {
+                    Button(action: { adjustMonth(-1) }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(Theme.Colors.textSecondary)
                     }
-                    .padding(.horizontal)
 
-                    if loading && dashboardData == nil {
-                        ProgressView()
-                            .padding(.top, 60)
-                    } else if let data = dashboardData {
-                        let savings = data.savingsTarget ?? 0
+                    Text(isYTD ? "\(month.prefix(4)) YTD" : Formatters.monthLabel(month))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Theme.Colors.text)
 
-                        // 1. Pulse - Flexible Remaining (with inline amortize suggestion)
-                        PulseCardView(
-                            flexibleRemaining: data.summary.flexibleRemaining,
-                            flexibleBudget: data.summary.flexibleBudget,
-                            daysRemaining: data.summary.daysRemaining,
-                            dailyBudget: data.summary.dailyBudget,
-                            savingsTarget: savings,
-                            onGoalTap: { activeSheet = .savings },
-                            amortizeSuggestion: (!dismissedAmortizeSuggestion && data.amortization?.largeUnamortizedExpense != nil)
-                                ? AmortizeSuggestion(
-                                    amount: data.amortization!.largeUnamortizedExpense!.amount,
-                                    description: data.amortization!.largeUnamortizedExpense!.description
-                                ) : nil,
-                            onAmortizeTap: { showAmortizeSuggest = true },
-                            onAmortizeDismiss: { dismissedAmortizeSuggestion = true }
-                        )
-                        .padding(.horizontal)
+                    Button(action: { adjustMonth(1) }) {
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(Theme.Colors.textSecondary)
+                    }
 
-                        // 2. Cash Flow (nodes tappable + badge pills)
-                        FlowCardView(
-                            netIncome: data.summary.netIncome,
-                            fixedTotal: max(data.summary.fixedExpenses, data.summary.expectedFixed ?? 0),
-                            flexibleTotal: data.summary.flexibleExpenses,
-                            savingsTarget: savings,
-                            spreadTotal: data.summary.spreadExpenses ?? 0,
-                            healthcareTotal: data.healthcare.totalReimbursed,
-                            healthcarePaidTotal: data.healthcare.totalPaid,
-                            healthcareAwaitingTotal: data.healthcare.pendingReimbursement,
-                            creditBadgeCount: data.windfall?.unallocatedCount ?? 0,
-                            creditBadgeTotal: data.windfall?.unallocatedTotal ?? 0,
-                            pendingReturns: data.netCash?.pendingReturns ?? 0,
-                            expectedFixed: data.summary.expectedFixed,
-                            actualFixed: data.summary.fixedExpenses,
-                            onNodeTap: { nodeId in
-                                switch nodeId {
-                                case "income": activeSheet = .income
-                                case "fixed": fixedNavActive = true
-                                case "flexible": flexibleNavActive = true
-                                case "savings": activeSheet = .savings
-                                case "spread": spreadNavActive = true
-                                case "healthcare": healthcareNavActive = true
-                                default: break
-                                }
-                            },
-                            onCreditBadgeTap: { creditTriageNavActive = true },
-                            onRefundTap: { refundNavActive = true }
-                        )
-                        .padding(.horizontal)
+                    Spacer()
 
-                        // 3. Net Cash (simplified — no callouts)
-                        if let netCash = data.netCash {
-                            NetCashCardView(metrics: netCash)
+                    Button(isYTD ? "Month" : "YTD") {
+                        isYTD.toggle()
+                        loadData()
+                    }
+                    .font(.system(size: 12, weight: .medium))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Theme.Colors.surfaceSolid)
+                    .cornerRadius(6)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Theme.Colors.border, lineWidth: 1)
+                    )
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+
+                // Scrollable card content — vertically centered
+                GeometryReader { geo in
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            if loading && dashboardData == nil {
+                                ProgressView()
+                                    .padding(.top, 60)
+                            } else if let data = dashboardData {
+                                let savings = data.savingsTarget ?? 0
+
+                                // Hero Zone
+                                PulseCardView(
+                                    flexibleRemaining: data.summary.flexibleRemaining,
+                                    flexibleBudget: data.summary.flexibleBudget,
+                                    daysRemaining: data.summary.daysRemaining,
+                                    dailyBudget: data.summary.dailyBudget,
+                                    historicalPace: data.historicalPace,
+                                    savingsTarget: savings,
+                                    onGoalTap: { savingsNavActive = true },
+                                    amortizeSuggestion: (!dismissedAmortizeSuggestion && data.amortization?.largeUnamortizedExpense != nil)
+                                        ? AmortizeSuggestion(
+                                            amount: data.amortization!.largeUnamortizedExpense!.amount,
+                                            description: data.amortization!.largeUnamortizedExpense!.description
+                                        ) : nil,
+                                    onAmortizeTap: { showAmortizeSuggest = true },
+                                    onAmortizeDismiss: { dismissedAmortizeSuggestion = true }
+                                )
                                 .padding(.horizontal)
-                        }
 
-                        // 4. Pending Healthcare & Returns callouts
-                        if data.healthcare.pendingReimbursement > 0 || (data.returns?.pendingAmount ?? 0) > 0 {
-                            HStack(spacing: 10) {
-                                if data.healthcare.pendingReimbursement > 0 {
-                                    Button {
-                                        healthcareNavActive = true
-                                    } label: {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "plus")
-                                                .font(.system(size: 11, weight: .semibold))
-                                                .foregroundColor(Color(hex: "#b45309"))
-                                            Text("Healthcare")
-                                                .font(.system(size: 12))
-                                                .foregroundColor(Color(hex: "#b45309"))
-                                            Spacer()
-                                            Text(Formatters.currency(data.healthcare.pendingReimbursement, decimals: false))
-                                                .font(.system(size: 13, weight: .semibold))
-                                                .foregroundColor(Color(hex: "#b45309"))
-                                        }
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 8)
-                                        .background(Color(hex: "#fef3e2"))
-                                        .cornerRadius(8)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color(hex: "#fde68a"), lineWidth: 1)
+                                // Flow Zone
+                                VStack(spacing: 12) {
+                                    FlowCardView(
+                                        netIncome: data.summary.netIncome,
+                                        fixedTotal: max(data.summary.fixedExpenses, data.summary.expectedFixed ?? 0),
+                                        flexibleTotal: data.summary.flexibleExpenses,
+                                        savingsTarget: savings,
+                                        spreadTotal: data.summary.spreadExpenses ?? 0,
+                                        healthcareTotal: data.healthcare.totalReimbursed,
+                                        healthcarePaidTotal: data.healthcare.totalPaid,
+                                        healthcareAwaitingTotal: data.healthcare.pendingReimbursement,
+                                        creditBadgeCount: data.windfall?.unallocatedCount ?? 0,
+                                        creditBadgeTotal: data.windfall?.unallocatedTotal ?? 0,
+                                        pendingReturns: data.netCash?.pendingReturns ?? 0,
+                                        expectedFixed: data.summary.expectedFixed,
+                                        actualFixed: data.summary.fixedExpenses,
+                                        onNodeTap: { nodeId in
+                                            switch nodeId {
+                                            case "income": incomeNavActive = true
+                                            case "fixed": fixedNavActive = true
+                                            case "flexible": flexibleNavActive = true
+                                            case "savings": savingsNavActive = true
+                                            case "spread": spreadNavActive = true
+                                            case "healthcare": healthcareNavActive = true
+                                            default: break
+                                            }
+                                        },
+                                        onCreditBadgeTap: { creditTriageNavActive = true },
+                                        onRefundTap: { refundNavActive = true }
+                                    )
+
+                                    if let netCash = data.netCash {
+                                        NetCashCardView(
+                                            metrics: netCash,
+                                            onPendingRefundsTap: { pendingRefundsNavActive = true },
+                                            onGoalsTap: { onGoalsTap?() }
                                         )
                                     }
-                                    .buttonStyle(.plain)
                                 }
-                                if (data.returns?.pendingAmount ?? 0) > 0 {
-                                    Button {
-                                        returnsNavActive = true
-                                    } label: {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "arrow.left")
-                                                .font(.system(size: 11, weight: .semibold))
-                                                .foregroundColor(Color(hex: "#7c3aed"))
-                                            Text("Returns")
-                                                .font(.system(size: 12))
-                                                .foregroundColor(Color(hex: "#7c3aed"))
-                                            Spacer()
-                                            Text(Formatters.currency(data.returns!.pendingAmount, decimals: false))
-                                                .font(.system(size: 13, weight: .semibold))
-                                                .foregroundColor(Color(hex: "#7c3aed"))
-                                        }
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 8)
-                                        .background(Color(hex: "#f3e8ff"))
-                                        .cornerRadius(8)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color(hex: "#e9d5ff"), lineWidth: 1)
-                                        )
-                                    }
-                                    .buttonStyle(.plain)
-                                }
+                                .padding(.horizontal)
+                                .padding(.top, 12)
+
+                            } else {
+                                Text("No data for this period")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Theme.Colors.textMuted)
+                                    .padding(.top, 60)
                             }
-                            .padding(.horizontal)
                         }
-                    } else {
-                        Text("No data for this period")
-                            .font(.system(size: 13))
-                            .foregroundColor(Theme.Colors.textMuted)
-                            .padding(.top, 60)
+                        .frame(minHeight: geo.size.height, alignment: .center)
+                    }
+                    .refreshable {
+                        // Sync from Plaid first, then reload dashboard
+                        let _: SyncResult? = try? await APIClient.shared.request(
+                            "/api/plaid/sync",
+                            method: "POST"
+                        )
+                        let params = isYTD
+                            ? "year=\(month.prefix(4))&include_balances=true"
+                            : "month=\(month)&include_balances=true"
+                        dashboardData = try? await APIClient.shared.request("/api/dashboard?\(params)")
                     }
                 }
-                .padding(.top, 8)
-                .padding(.bottom, 90)
-            }
-            .refreshable {
-                // Sync from Plaid first, then reload dashboard
-                let _: SyncResult? = try? await APIClient.shared.request(
-                    "/api/plaid/sync",
-                    method: "POST"
-                )
-                let params = isYTD
-                    ? "year=\(month.prefix(4))&include_balances=true"
-                    : "month=\(month)&include_balances=true"
-                dashboardData = try? await APIClient.shared.request("/api/dashboard?\(params)")
             }
             .background(Theme.Colors.background)
             .toolbar(.hidden, for: .navigationBar)
-            .sheet(item: $activeSheet) { sheet in
+            .navigationDestination(isPresented: $incomeNavActive) {
                 if let data = dashboardData {
-                    switch sheet {
-                    case .income:
-                        IncomeBreakdownSheet(
-                            grossIncome: data.summary.grossIncome,
-                            netIncome: data.summary.netIncome,
-                            incomeBreakdown: data.incomeBreakdown
-                        )
-                    case .savings:
-                        SavingsGoalSheet(month: month, onSave: { loadData() })
-                    }
+                    IncomeBreakdownSheet(
+                        grossIncome: data.summary.grossIncome,
+                        netIncome: data.summary.netIncome,
+                        incomeBreakdown: data.incomeBreakdown
+                    )
                 }
+            }
+            .navigationDestination(isPresented: $savingsNavActive) {
+                SavingsGoalSheet(month: month, onSave: { loadData() })
             }
             .navigationDestination(isPresented: $fixedNavActive) {
                 if let data = dashboardData {
@@ -231,7 +172,7 @@ struct DashboardView: View {
                         items: data.breakdown.fixed,
                         groupedItems: data.breakdown.fixed,
                         budget: data.summary.fixedExpenses,
-                        barColor: "#666",
+                        barColor: "#8e8e93",
                         month: month,
                         fixedFilter: true
                     )
@@ -245,9 +186,18 @@ struct DashboardView: View {
                         items: data.breakdown.flexible,
                         groupedItems: data.breakdown.flexibleGrouped ?? data.breakdown.flexible,
                         budget: data.summary.flexibleBudget,
-                        barColor: "#0d9488",
+                        barColor: "#7b93c9",
                         month: month,
                         fixedFilter: false
+                    )
+                }
+            }
+            .navigationDestination(isPresented: $pendingRefundsNavActive) {
+                if let netCash = dashboardData?.netCash {
+                    PendingRefundsView(
+                        month: month,
+                        pendingHealthcare: netCash.pendingHealthcare,
+                        pendingReturns: netCash.pendingReturns
                     )
                 }
             }
@@ -270,12 +220,14 @@ struct DashboardView: View {
             }
             .onChange(of: fixedNavActive) { old, new in if old && !new { loadData() } }
             .onChange(of: flexibleNavActive) { old, new in if old && !new { loadData() } }
+            .onChange(of: pendingRefundsNavActive) { old, new in if old && !new { loadData() } }
             .onChange(of: healthcareNavActive) { old, new in if old && !new { loadData() } }
             .onChange(of: returnsNavActive) { old, new in if old && !new { loadData() } }
             .onChange(of: spreadNavActive) { old, new in if old && !new { loadData() } }
             .onChange(of: creditTriageNavActive) { old, new in if old && !new { loadData() } }
             .onChange(of: refundNavActive) { old, new in if old && !new { loadData() } }
-            .onChange(of: activeSheet) { old, new in if old != nil && new == nil { loadData() } }
+            .onChange(of: incomeNavActive) { old, new in if old && !new { loadData() } }
+            .onChange(of: savingsNavActive) { old, new in if old && !new { loadData() } }
             .sheet(isPresented: $showAmortizeSuggest) {
                 if let suggestion = dashboardData?.amortization?.largeUnamortizedExpense {
                     AmortizeSheet(
@@ -305,14 +257,21 @@ struct DashboardView: View {
     }
 
     func loadData() {
-        loading = true
+        let cacheKey = isYTD ? "dashboard_ytd_\(month.prefix(4))" : "dashboard_\(month)"
+        // Show cached data instantly if available
+        if dashboardData == nil, let cached: DashboardData = ResponseCache.shared.get(cacheKey) {
+            dashboardData = cached
+            loading = false
+        }
         Task {
             do {
                 let params = isYTD
                     ? "year=\(month.prefix(4))&include_balances=true"
                     : "month=\(month)&include_balances=true"
 
-                dashboardData = try await APIClient.shared.request("/api/dashboard?\(params)")
+                let fresh: DashboardData = try await APIClient.shared.request("/api/dashboard?\(params)")
+                dashboardData = fresh
+                ResponseCache.shared.set(cacheKey, value: fresh)
             } catch {
                 print("Dashboard load error:", error)
             }
@@ -364,7 +323,7 @@ struct CategoryBreakdownSheet: View {
                     // Summary
                     HStack {
                         Text("Total")
-                            .font(.system(size: 13))
+                            .font(.system(size: 14))
                             .foregroundColor(Theme.Colors.textSecondary)
                         Spacer()
                         Text(Formatters.currency(total, decimals: false))
@@ -386,7 +345,7 @@ struct CategoryBreakdownSheet: View {
                         .frame(height: TreemapLayout.height(for: min(items.count, 8)))
                     } else {
                         Text("No expenses in this category")
-                            .font(.system(size: 13))
+                            .font(.system(size: 14))
                             .foregroundColor(Theme.Colors.textMuted)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.vertical, 40)

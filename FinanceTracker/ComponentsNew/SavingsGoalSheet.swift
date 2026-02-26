@@ -38,44 +38,41 @@ struct SavingsGoalSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if loading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            switch mode {
-                            case .selection:
-                                selectionView
-                            case .saveThisMonth:
-                                saveThisMonthView
-                            case .pickGoal:
-                                pickGoalView
-                            case .configureGoalSavings:
-                                configureGoalSavingsView
-                            case .createNewGoal:
-                                createNewGoalView
-                            }
+        Group {
+            if loading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        switch mode {
+                        case .selection:
+                            selectionView
+                        case .saveThisMonth:
+                            saveThisMonthView
+                        case .pickGoal:
+                            pickGoalView
+                        case .configureGoalSavings:
+                            configureGoalSavingsView
+                        case .createNewGoal:
+                            createNewGoalView
                         }
-                        .padding()
                     }
+                    .padding()
                 }
             }
-            .background(Theme.Colors.background)
-            .navigationTitle(navigationTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
-                        .font(.system(size: 14, weight: .medium))
-                }
-                if mode != .selection {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button {
-                            goBack()
-                        } label: {
+        }
+        .background(Theme.Colors.background)
+        .navigationTitle(navigationTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(mode != .selection)
+        .toolbar {
+            if mode != .selection {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        goBack()
+                    } label: {
+                        HStack(spacing: 4) {
                             Image(systemName: "chevron.left")
                                 .font(.system(size: 14, weight: .medium))
                         }
@@ -128,7 +125,7 @@ struct SavingsGoalSheet: View {
                 title: "Save This Month",
                 subtitle: "Set aside a specific amount this month",
                 icon: "dollarsign.circle",
-                color: Theme.Colors.teal
+                color: Theme.Colors.flowFlex
             ) {
                 mode = .saveThisMonth
             }
@@ -149,12 +146,10 @@ struct SavingsGoalSheet: View {
             HStack {
                 Image(systemName: "target")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Theme.Colors.teal)
+                    .foregroundColor(Theme.Colors.flowFlex)
                 Text("Saving")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(Theme.Colors.teal)
-                    .textCase(.uppercase)
-                    .tracking(0.5)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Theme.Colors.flowFlex)
                 Spacer()
                 Button("Clear") {
                     clearSavingsTarget()
@@ -212,17 +207,17 @@ struct SavingsGoalSheet: View {
                             .foregroundColor(Theme.Colors.textMuted)
                         Text(Formatters.currency(computeMonthly(goal.targetAmount - goal.currentAmount, deadline: deadline), decimals: false))
                             .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                            .foregroundColor(Theme.Colors.teal)
+                            .foregroundColor(Theme.Colors.flowFlex)
                     }
                 }
             }
         }
         .padding(12)
-        .background(Theme.Colors.tealBg)
+        .background(Theme.Colors.flowFlex.opacity(0.06))
         .cornerRadius(8)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Theme.Colors.teal.opacity(0.3), lineWidth: 1)
+                .stroke(Theme.Colors.flowFlex.opacity(0.3), lineWidth: 1)
         )
     }
 
@@ -263,7 +258,7 @@ struct SavingsGoalSheet: View {
                     .foregroundColor(validMonthlyAmount ? .white : Theme.Colors.textDisabled)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 11)
-                    .background(validMonthlyAmount ? Theme.Colors.teal : Color.white)
+                    .background(validMonthlyAmount ? Theme.Colors.flowFlex : Color.white)
                     .cornerRadius(8)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
@@ -351,7 +346,7 @@ struct SavingsGoalSheet: View {
                         .stroke(Theme.Colors.border, lineWidth: 3)
                     Circle()
                         .trim(from: 0, to: min(progress, 1))
-                        .stroke(Theme.Colors.teal, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                        .stroke(Theme.Colors.flowFlex, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                     Text("\(Int(progress * 100))%")
                         .font(.system(size: 9, weight: .semibold))
@@ -367,10 +362,10 @@ struct SavingsGoalSheet: View {
                         if isCurrent {
                             Text("Active")
                                 .font(.system(size: 9, weight: .semibold))
-                                .foregroundColor(Theme.Colors.teal)
+                                .foregroundColor(Theme.Colors.flowFlex)
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 1)
-                                .background(Theme.Colors.tealBg)
+                                .background(Theme.Colors.flowFlex.opacity(0.06))
                                 .cornerRadius(3)
                         }
                     }
@@ -384,7 +379,7 @@ struct SavingsGoalSheet: View {
                 if isCurrent {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 16))
-                        .foregroundColor(Theme.Colors.teal)
+                        .foregroundColor(Theme.Colors.flowFlex)
                 } else {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 10, weight: .medium))
@@ -392,11 +387,11 @@ struct SavingsGoalSheet: View {
                 }
             }
             .padding(12)
-            .background(isCurrent ? Theme.Colors.tealBg : Color.white)
+            .background(isCurrent ? Theme.Colors.flowFlex.opacity(0.06) : Color.white)
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(isCurrent ? Theme.Colors.teal.opacity(0.3) : Theme.Colors.border, lineWidth: 1)
+                    .stroke(isCurrent ? Theme.Colors.flowFlex.opacity(0.3) : Theme.Colors.border, lineWidth: 1)
             )
         }
     }
@@ -414,7 +409,7 @@ struct SavingsGoalSheet: View {
                             .stroke(Theme.Colors.border, lineWidth: 3)
                         Circle()
                             .trim(from: 0, to: min(progress, 1))
-                            .stroke(Theme.Colors.teal, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                            .stroke(Theme.Colors.flowFlex, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                             .rotationEffect(.degrees(-90))
                     }
                     .frame(width: 32, height: 32)
@@ -500,14 +495,14 @@ struct SavingsGoalSheet: View {
                 let months = remaining > 0 ? Int(ceil(remaining / amount)) : 0
                 HStack(spacing: 6) {
                     Image(systemName: "calendar")
-                        .foregroundColor(Theme.Colors.teal)
+                        .foregroundColor(Theme.Colors.flowFlex)
                         .font(.system(size: 12))
                     Text("~\(months) months to reach goal")
                         .font(.system(size: 12))
                         .foregroundColor(Theme.Colors.textSecondary)
                 }
                 .padding(10)
-                .background(Theme.Colors.tealBg)
+                .background(Theme.Colors.flowFlex.opacity(0.06))
                 .cornerRadius(8)
             }
         }
@@ -542,17 +537,17 @@ struct SavingsGoalSheet: View {
             if monthly > 0 {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.right.circle")
-                        .foregroundColor(Theme.Colors.teal)
+                        .foregroundColor(Theme.Colors.flowFlex)
                         .font(.system(size: 12))
                     Text("\(Formatters.currency(monthly, decimals: false))/month")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(Theme.Colors.teal)
+                        .foregroundColor(Theme.Colors.flowFlex)
                     Text("for \(months) months")
                         .font(.system(size: 11))
                         .foregroundColor(Theme.Colors.textMuted)
                 }
                 .padding(10)
-                .background(Theme.Colors.tealBg)
+                .background(Theme.Colors.flowFlex.opacity(0.06))
                 .cornerRadius(8)
             }
         }

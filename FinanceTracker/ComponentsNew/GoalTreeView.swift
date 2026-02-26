@@ -6,8 +6,8 @@ enum TreeStage {
     var color: Color {
         switch self {
         case .seed: return Theme.Colors.textMuted
-        case .sprout: return Theme.Colors.tealLight
-        case .sapling: return Theme.Colors.teal
+        case .sprout: return Theme.Colors.flowFlex.opacity(0.7)
+        case .sapling: return Theme.Colors.flowFlex
         case .tree: return Theme.Colors.brandGreen
         case .canopy: return Theme.Colors.brandGreen
         }
@@ -149,8 +149,8 @@ struct GoalTreeView: View {
                 )
 
             case .canopy:
-                let teal = Theme.Colors.teal
-                let tealLight = Theme.Colors.tealLight
+                let teal = Theme.Colors.flowFlex
+                let tealLight = Theme.Colors.flowFlex.opacity(0.7)
                 let green = Theme.Colors.brandGreen
 
                 // Center trunk

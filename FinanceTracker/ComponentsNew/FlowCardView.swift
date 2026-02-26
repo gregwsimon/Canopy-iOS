@@ -26,10 +26,9 @@ struct FlowCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("CASH FLOW")
-                .font(.system(size: 10, weight: .medium))
+            Text("Cash flow")
+                .font(.system(size: 13, weight: .medium))
                 .foregroundColor(Theme.Colors.textMuted)
-                .tracking(1)
 
             if netIncome > 0 {
                 flowChart
@@ -42,8 +41,14 @@ struct FlowCardView: View {
                     .padding(.vertical, 40)
             }
         }
-        .padding(16)
-        .cardStyle()
+        .padding(Theme.Spacing.cardPadding)
+        .background(Theme.Colors.surface)
+        .cornerRadius(Theme.Radii.card)
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Radii.card)
+                .stroke(Theme.Colors.border, lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 1)
     }
 
     private var flowChart: some View {
@@ -121,34 +126,34 @@ struct FlowCardView: View {
                     with: .color(Theme.Colors.success)
                 )
 
-                // Amber credit sub-segment at bottom of income bar
+                // Credit sub-segment at bottom of income bar
                 ctx.fill(
                     Path(roundedRect: CGRect(x: leftBarX, y: creditSegTop, width: barW, height: creditSegH), cornerRadius: 3),
-                    with: .color(Theme.Colors.amber)
+                    with: .color(Theme.Colors.flowCredits)
                 )
 
                 if tealH > 0 {
                     ctx.fill(
                         Path(roundedRect: CGRect(x: rightBarX, y: tealTop, width: barW, height: tealH), cornerRadius: 3),
-                        with: .color(Theme.Colors.teal)
+                        with: .color(Theme.Colors.flowSavings)
                     )
                 }
 
                 if spreadH > 0 {
                     ctx.fill(
                         Path(roundedRect: CGRect(x: rightBarX, y: spreadTop, width: barW, height: spreadH), cornerRadius: 3),
-                        with: .color(Theme.Colors.rose)
+                        with: .color(Theme.Colors.flowPayoff)
                     )
                 }
 
                 ctx.fill(
                     Path(roundedRect: CGRect(x: rightBarX, y: greyTop, width: barW, height: greyH), cornerRadius: 3),
-                    with: .color(Theme.Colors.textSecondary)
+                    with: .color(Theme.Colors.flowFixed)
                 )
 
                 ctx.fill(
                     Path(roundedRect: CGRect(x: rightBarX, y: blueTop, width: barW, height: blueH), cornerRadius: 3),
-                    with: .color(Theme.Colors.flexBlue)
+                    with: .color(Theme.Colors.flowFlex)
                 )
 
                 if unspentH > 0 {
@@ -161,16 +166,16 @@ struct FlowCardView: View {
 
                 // Flow bands
                 if tealH > 0 {
-                    drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcSavTop, fromH: greenH * savFrac, toX: rightBarX, toTopY: tealTop, toH: tealH, color: Theme.Colors.teal.opacity(0.10))
+                    drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcSavTop, fromH: greenH * savFrac, toX: rightBarX, toTopY: tealTop, toH: tealH, color: Theme.Colors.flowSavings.opacity(0.10))
                 }
 
                 if spreadH > 0 {
-                    drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcSpreadTop, fromH: greenH * spreadFrac, toX: rightBarX, toTopY: spreadTop, toH: spreadH, color: Theme.Colors.rose.opacity(0.10))
+                    drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcSpreadTop, fromH: greenH * spreadFrac, toX: rightBarX, toTopY: spreadTop, toH: spreadH, color: Theme.Colors.flowPayoff.opacity(0.10))
                 }
 
-                drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFixedTop, fromH: greenH * fixedFrac, toX: rightBarX, toTopY: greyTop, toH: greyH, color: Theme.Colors.textSecondary.opacity(0.12))
+                drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFixedTop, fromH: greenH * fixedFrac, toX: rightBarX, toTopY: greyTop, toH: greyH, color: Theme.Colors.flowFixed.opacity(0.12))
 
-                drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFlexTop, fromH: greenH * flexFrac, toX: rightBarX, toTopY: blueTop, toH: blueH, color: Theme.Colors.flexBlue.opacity(0.10))
+                drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFlexTop, fromH: greenH * flexFrac, toX: rightBarX, toTopY: blueTop, toH: blueH, color: Theme.Colors.flowFlex.opacity(0.10))
 
                 if unspentH > 0 {
                     drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcUnspentTop, fromH: greenH * unspentFrac, toX: rightBarX, toTopY: unspentTop, toH: unspentH, color: Theme.Colors.textDisabled.opacity(0.08))
@@ -182,7 +187,7 @@ struct FlowCardView: View {
             // Net Income label
             VStack(alignment: .trailing, spacing: 2) {
                 Text("Net Income")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Theme.Colors.text)
                 Text(Formatters.currency(netIncome, decimals: false))
                     .font(.system(size: 10))
@@ -196,7 +201,7 @@ struct FlowCardView: View {
             // Fixed label
             VStack(alignment: .leading, spacing: 1) {
                 Text("Fixed")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Theme.Colors.text)
                 HStack(spacing: 4) {
                     Text(Formatters.currency(fixedTotal, decimals: false))
@@ -206,11 +211,11 @@ struct FlowCardView: View {
                         let delta = actual - expected
                         if delta > 10 {
                             Text("↑ \(Formatters.currency(delta, decimals: false))")
-                                .font(.system(size: 9, weight: .medium))
+                                .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(Theme.Colors.error)
                         } else if delta < -10 {
                             Text("↓ \(Formatters.currency(delta, decimals: false))")
-                                .font(.system(size: 9, weight: .medium))
+                                .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(Theme.Colors.success)
                         }
                     }
@@ -225,11 +230,11 @@ struct FlowCardView: View {
             if tealH > 0 {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Saving")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(Theme.Colors.teal)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Theme.Colors.flowSavings)
                     Text(Formatters.currency(savingsTarget, decimals: false))
                         .font(.system(size: 10))
-                        .foregroundColor(Theme.Colors.teal.opacity(0.7))
+                        .foregroundColor(Theme.Colors.flowSavings.opacity(0.7))
                 }
                 .frame(width: rightLabelW, alignment: .leading)
                 .contentShape(Rectangle())
@@ -241,11 +246,11 @@ struct FlowCardView: View {
             if spreadH > 0 {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Payoff")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                     Text(Formatters.currency(spreadTotal, decimals: false))
                         .font(.system(size: 10))
                 }
-                .foregroundColor(Theme.Colors.rose)
+                .foregroundColor(Theme.Colors.flowPayoff)
                 .frame(width: rightLabelW, alignment: .leading)
                 .contentShape(Rectangle())
                 .onTapGesture { onNodeTap?("spread") }
@@ -255,7 +260,7 @@ struct FlowCardView: View {
             // Flexible label
             VStack(alignment: .leading, spacing: 1) {
                 Text("Flexible")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Theme.Colors.text)
                 Text(Formatters.currency(flexibleTotal, decimals: false))
                     .font(.system(size: 10))
@@ -270,7 +275,7 @@ struct FlowCardView: View {
             if unspentH > 0 {
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Unspent")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Theme.Colors.textDisabled)
                     Text(Formatters.currency(unspent, decimals: false))
                         .font(.system(size: 10))
@@ -282,19 +287,22 @@ struct FlowCardView: View {
 
             // Credit segment tappable label (left side, next to amber bar)
             Button(action: { onCreditBadgeTap?() }) {
-                VStack(alignment: .trailing, spacing: 1) {
-                    HStack(spacing: 2) {
-                        Text(creditBadgeCount > 0 ? "\(creditBadgeCount) Credit\(creditBadgeCount == 1 ? "" : "s")" : "Credits")
-                            .font(.system(size: 11, weight: .medium))
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 7, weight: .semibold))
+                HStack(spacing: 4) {
+                    VStack(alignment: .trailing, spacing: 1) {
+                        HStack(spacing: 2) {
+                            Text(creditBadgeCount > 0 ? "\(creditBadgeCount) Credit\(creditBadgeCount == 1 ? "" : "s")" : "Credits")
+                                .font(.system(size: 12, weight: .medium))
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 8, weight: .semibold))
+                        }
+                        if creditBadgeCount > 0 {
+                            Text(Formatters.currency(creditBadgeTotal, decimals: false))
+                                .font(.system(size: 10))
+                        }
                     }
-                    if creditBadgeCount > 0 {
-                        Text(Formatters.currency(creditBadgeTotal, decimals: false))
-                            .font(.system(size: 10))
-                    }
+                    .foregroundColor(Theme.Colors.flowCredits)
+
                 }
-                .foregroundColor(Color(hex: "#b45309"))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

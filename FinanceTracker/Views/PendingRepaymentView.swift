@@ -2,23 +2,29 @@ import SwiftUI
 
 struct RefundsView: View {
     let month: String
-    @State private var returnItems: [ReturnItem] = []
-    @State private var loading = true
+    @State private var returnItems: [ReturnItem]
+    @State private var loading: Bool
     @State private var sortOrder: SortOrder = .date
+
+    init(month: String) {
+        self.month = month
+        let cacheKey = "returns_\(month)"
+        if let cached: [ReturnItem] = ResponseCache.shared.get(cacheKey) {
+            _returnItems = State(initialValue: cached)
+            _loading = State(initialValue: false)
+        } else {
+            _returnItems = State(initialValue: [])
+            _loading = State(initialValue: true)
+        }
+    }
 
     // Returns metrics
     private var retPending: Double { returnItems.filter { $0.return_status == "pending" }.reduce(0) { $0 + abs($1.amount) } }
-    private var retReceived: Double { returnItems.filter { $0.return_status == "received" }.reduce(0) { $0 + abs($1.amount) } }
+    private var retReceived: Double { returnItems.filter { $0.return_status == "received" || $0.return_status == "closed" }.reduce(0) { $0 + abs($1.amount) } }
 
     var body: some View {
         VStack(spacing: 0) {
-            if loading {
-                Spacer()
-                ProgressView()
-                Spacer()
-            } else {
-                returnsContent
-            }
+            returnsContent
         }
         .background(Theme.Colors.background)
         .navigationTitle("Refunds")
@@ -37,22 +43,22 @@ struct RefundsView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HStack(spacing: 12) {
-                    SummaryPill(label: "PENDING", value: retPending, color: Theme.Colors.warning)
+                    SummaryPill(label: "PENDING", value: retPending, color: Theme.Colors.flowCredits)
                     SummaryPill(label: "RECEIVED", value: retReceived, color: Theme.Colors.success)
                 }
                 .padding(.horizontal)
 
                 if returnItems.isEmpty {
                     Text("No returns")
-                        .font(.system(size: 13))
+                        .font(.system(size: 14))
                         .foregroundColor(Theme.Colors.textMuted)
                         .padding(.top, 40)
                 } else {
                     let retSortFn: (ReturnItem, ReturnItem) -> Bool = sortOrder == .date
                         ? { $0.date > $1.date }
                         : { abs($0.amount) > abs($1.amount) }
-                    let pending = returnItems.filter { $0.return_status != "received" }.sorted(by: retSortFn)
-                    let completed = returnItems.filter { $0.return_status == "received" }.sorted(by: retSortFn)
+                    let pending = returnItems.filter { $0.return_status != "received" && $0.return_status != "closed" }.sorted(by: retSortFn)
+                    let completed = returnItems.filter { $0.return_status == "received" || $0.return_status == "closed" }.sorted(by: retSortFn)
 
                     if !pending.isEmpty {
                         VStack(spacing: 0) {
@@ -111,7 +117,7 @@ struct RefundsView: View {
             Spacer()
             Text(Formatters.currency(abs(item.amount), decimals: false))
                 .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                .foregroundColor(grayed ? Color(hex: "#bbb") : Theme.Colors.error)
+                .foregroundColor(grayed ? Color(hex: "#bbb") : Theme.Colors.text)
         }
         .padding(.horizontal)
         .padding(.vertical, 12)
@@ -120,9 +126,16 @@ struct RefundsView: View {
     // MARK: - Data
 
     func loadData() {
+        let cacheKey = "returns_\(month)"
+        if returnItems.isEmpty, let cached: [ReturnItem] = ResponseCache.shared.get(cacheKey) {
+            returnItems = cached
+            loading = false
+        }
         Task {
             do {
-                returnItems = try await APIClient.shared.request("/api/dashboard/returns?month=\(month)")
+                let fresh: [ReturnItem] = try await APIClient.shared.request("/api/dashboard/returns?month=\(month)")
+                returnItems = fresh
+                ResponseCache.shared.set(cacheKey, value: fresh)
             } catch {
                 print("Returns load error:", error)
             }
@@ -144,9 +157,8 @@ private struct SummaryPill: View {
                 .font(.system(size: 15, weight: .bold))
                 .foregroundColor(color)
             Text(label)
-                .font(.system(size: 8, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundColor(Theme.Colors.textMuted)
-                .tracking(0.5)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)

@@ -24,10 +24,9 @@ struct HealthcareCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("HEALTHCARE YTD")
-                .font(.system(size: 10, weight: .medium))
+            Text("Healthcare YTD")
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(Theme.Colors.textMuted)
-                .tracking(1)
 
             if totalPaid == 0 {
                 Text("No healthcare expenses")
@@ -109,13 +108,13 @@ struct LegendRow: View {
                 .frame(width: 8, height: 8)
 
             Text(label)
-                .font(.system(size: 10))
+                .font(.system(size: 12))
                 .foregroundColor(Theme.Colors.textSecondary)
 
             Spacer()
 
             Text(Formatters.currency(amount, decimals: false))
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(Theme.Colors.text)
         }
     }

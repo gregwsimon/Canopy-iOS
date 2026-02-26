@@ -95,7 +95,8 @@ struct TransactionsView: View {
                     .font(.system(size: 13, weight: .medium))
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.white)
+                    .background(Theme.Colors.surfaceSolid)
+                    .cornerRadius(6)
                     .overlay(
                         RoundedRectangle(cornerRadius: 6)
                             .stroke(Theme.Colors.border, lineWidth: 1)
@@ -136,7 +137,8 @@ struct TransactionsView: View {
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)
-                .background(Color.white)
+                .background(Theme.Colors.surfaceSolid)
+                .cornerRadius(8)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Theme.Colors.border, lineWidth: 1)
@@ -166,7 +168,7 @@ struct TransactionsView: View {
                         .padding(.bottom, 8)
                 }
 
-                if loading {
+                if loading && transactions.isEmpty {
                     Spacer()
                     ProgressView()
                     Spacer()
@@ -198,7 +200,7 @@ struct TransactionsView: View {
                                             }
                                             if txn.is_healthcare == true, let hcStatus = txn.reimbursement_status, hcStatus != "none" {
                                                 if hcStatus == "partial" {
-                                                    StatusBadge(text: "Partial", textColor: Theme.Colors.warning, bgColor: Theme.Colors.warningBg)
+                                                    StatusBadge(text: "Partial", textColor: Theme.Colors.flowCredits, bgColor: Theme.Colors.flowCredits.opacity(0.12))
                                                     StatusBadge(text: "Reimbursed", textColor: Theme.Colors.success, bgColor: Theme.Colors.successBg)
                                                 } else {
                                                     StatusBadge.forHealthcare(hcStatus)
@@ -235,27 +237,36 @@ struct TransactionsView: View {
                                 Button { recategorizeTxn = txn } label: {
                                     Image(systemName: "folder")
                                 }
-                                .tint(Theme.Colors.accent)
+                                .tint(Theme.Colors.flowIncome)
 
                                 if txn.category_type == "expense" {
                                     Button { toggleFixed(txn) } label: {
                                         Image(systemName: txn.is_fixed == true ? "pin.slash" : "pin")
                                     }
-                                    .tint(Theme.Colors.textSecondary)
+                                    .tint(Theme.Colors.flowFixed)
 
                                     if txn.is_return == true {
                                         Button { undoReturn(txn) } label: {
                                             Image(systemName: "arrow.uturn.right")
                                         }
-                                        .tint(Theme.Colors.warning)
+                                        .tint(Theme.Colors.flowCredits)
                                     } else {
                                         Button { toggleReturn(txn) } label: {
                                             Image(systemName: "arrow.uturn.left")
                                         }
-                                        .tint(Theme.Colors.purple)
+                                        .tint(Theme.Colors.flowPayoff)
                                     }
                                 }
+
+                                // Mark positive-amount transactions as credit for triage
+                                if txn.amount > 0 && (txn.credit_allocation == nil || txn.credit_allocation == "none") {
+                                    Button { markAsCredit(txn) } label: {
+                                        Image(systemName: "dollarsign.circle")
+                                    }
+                                    .tint(Theme.Colors.flowCredits)
+                                }
                             }
+                            .listRowBackground(Theme.Colors.surfaceSolid)
                         }
 
                         // Total
@@ -268,8 +279,10 @@ struct TransactionsView: View {
                                 .font(.system(size: 14, weight: .bold, design: .monospaced))
                                 .foregroundColor(total >= 0 ? Theme.Colors.success : Theme.Colors.error)
                         }
+                        .listRowBackground(Theme.Colors.surfaceSolid)
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                 }
             }
             .background(Theme.Colors.background)
@@ -307,10 +320,17 @@ struct TransactionsView: View {
     }
 
     func loadData() {
-        loading = true
+        let cacheKey = "transactions_\(month)"
+        // Show cached data instantly if available
+        if transactions.isEmpty, let cached: [Transaction] = ResponseCache.shared.get(cacheKey) {
+            transactions = cached
+            loading = false
+        }
         Task {
             do {
-                transactions = try await APIClient.shared.request("/api/transactions?month=\(month)")
+                let fresh: [Transaction] = try await APIClient.shared.request("/api/transactions?month=\(month)")
+                transactions = fresh
+                ResponseCache.shared.set(cacheKey, value: fresh)
             } catch {
                 print("Load error:", error)
             }
@@ -379,6 +399,21 @@ struct TransactionsView: View {
         }
     }
 
+    func markAsCredit(_ txn: Transaction) {
+        Task {
+            do {
+                let _: OkResult = try await APIClient.shared.request(
+                    "/api/transactions",
+                    method: "PATCH",
+                    body: ["id": txn.id, "credit_allocation": "unallocated"]
+                )
+                loadData()
+            } catch {
+                print("Mark as credit error:", error)
+            }
+        }
+    }
+
     func recategorize(_ txn: Transaction, to newCatId: Int) {
         Task {
             do {
@@ -415,7 +450,7 @@ struct TransactionsView: View {
                 .foregroundColor(isSelected ? .white : Theme.Colors.textSecondary)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(isSelected ? Color(hex: color) : Color.white)
+                .background(isSelected ? Color(hex: color) : Theme.Colors.surfaceSolid)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)

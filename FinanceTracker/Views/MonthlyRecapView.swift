@@ -666,11 +666,11 @@ struct MonthlyRecapView: View {
             barRow(label: "Flexible", amount: r.flexible_expenses, maxAmount: r.net_income, color: Theme.Colors.accent)
 
             if r.spread_expenses > 0 {
-                barRow(label: "Payoff", amount: r.spread_expenses, maxAmount: r.net_income, color: Theme.Colors.rose)
+                barRow(label: "Payoff", amount: r.spread_expenses, maxAmount: r.net_income, color: Theme.Colors.flowPayoff)
             }
 
             if r.savings_target > 0 {
-                barRow(label: "Saving", amount: r.savings_target, maxAmount: r.net_income, color: Theme.Colors.teal)
+                barRow(label: "Saving", amount: r.savings_target, maxAmount: r.net_income, color: Theme.Colors.flowSavings)
             }
 
             if !isMidMonth {

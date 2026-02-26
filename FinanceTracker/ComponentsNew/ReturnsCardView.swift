@@ -6,10 +6,9 @@ struct ReturnsCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("RETURNS")
-                .font(.system(size: 10, weight: .medium))
+            Text("Returns")
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(Theme.Colors.textMuted)
-                .tracking(1)
 
             if pendingAmount == 0 && receivedAmount == 0 {
                 Text("No pending returns")
@@ -25,7 +24,7 @@ struct ReturnsCardView: View {
                                 .fill(Theme.Colors.warning)
                                 .frame(width: 8, height: 8)
                             Text("Pending")
-                                .font(.system(size: 10))
+                                .font(.system(size: 12))
                                 .foregroundColor(Theme.Colors.textSecondary)
                         }
                         Text(Formatters.currency(pendingAmount, decimals: false))
@@ -39,7 +38,7 @@ struct ReturnsCardView: View {
                                 .fill(Theme.Colors.success)
                                 .frame(width: 8, height: 8)
                             Text("Received")
-                                .font(.system(size: 10))
+                                .font(.system(size: 12))
                                 .foregroundColor(Theme.Colors.textSecondary)
                         }
                         Text(Formatters.currency(receivedAmount, decimals: false))

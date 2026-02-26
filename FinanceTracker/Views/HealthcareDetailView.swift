@@ -2,9 +2,21 @@ import SwiftUI
 
 struct HealthcareDetailView: View {
     let month: String
-    @State private var items: [HealthcareItem] = []
-    @State private var loading = true
+    @State private var items: [HealthcareItem]
+    @State private var loading: Bool
     @State private var sortOrder: SortOrder = .date
+
+    init(month: String) {
+        self.month = month
+        let cacheKey = "healthcare_\(month)"
+        if let cached: [HealthcareItem] = ResponseCache.shared.get(cacheKey) {
+            _items = State(initialValue: cached)
+            _loading = State(initialValue: false)
+        } else {
+            _items = State(initialValue: [])
+            _loading = State(initialValue: true)
+        }
+    }
 
     // MARK: - Metrics (using reimbursed_amount for accuracy)
 
@@ -59,7 +71,7 @@ struct HealthcareDetailView: View {
         VStack(spacing: 0) {
             // Summary
             VStack(spacing: 8) {
-                // Hero: Out of Pocket (true cost = what shows in flexible)
+                // Hero: Out of Pocket
                 HStack {
                     Text("Out of pocket")
                         .font(.system(size: 13, weight: .medium))
@@ -67,16 +79,20 @@ struct HealthcareDetailView: View {
                     Spacer()
                     Text(Formatters.currency(outOfPocket, decimals: false))
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(Theme.Colors.error)
+                        .foregroundColor(Theme.Colors.text)
                 }
                 .padding(12)
-                .background(Color(hex: "#fef2f2"))
+                .background(Color.white)
                 .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Theme.Colors.border, lineWidth: 1)
+                )
 
                 // Row 1: Total Charged | Awaiting
                 HStack(spacing: 8) {
                     SummaryPill(label: "TOTAL CHARGED", value: totalCharged, color: Theme.Colors.text)
-                    SummaryPill(label: "AWAITING", value: totalAwaiting, color: Theme.Colors.warning)
+                    SummaryPill(label: "AWAITING", value: totalAwaiting, color: Theme.Colors.flowCredits)
                 }
 
                 // Row 2: Reimbursed | Not Submitted
@@ -89,23 +105,24 @@ struct HealthcareDetailView: View {
             .padding(.top, 12)
             .padding(.bottom, 8)
 
-            if loading {
-                Spacer()
-                ProgressView()
-                Spacer()
-            } else if items.isEmpty {
-                Spacer()
-                Text("No healthcare expenses")
-                    .font(.system(size: 13))
-                    .foregroundColor(Theme.Colors.textMuted)
-                Spacer()
-            } else {
-                List {
+            Group {
+                if loading && items.isEmpty {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                } else if items.isEmpty {
+                    Spacer()
+                    Text("No healthcare expenses")
+                        .font(.system(size: 14))
+                        .foregroundColor(Theme.Colors.textMuted)
+                    Spacer()
+                } else {
+                    List {
                     // Awaiting Reimbursement section (pending + partial)
                     if !awaitingItems.isEmpty {
                         Section {
                             ForEach(awaitingItems) { item in
-                                healthcareRow(item, grayed: false)
+                                healthcareRow(item)
                                     .swipeActions(edge: .trailing) {
                                         Button("Received") { updateStatus(item, to: "complete") }
                                             .tint(Theme.Colors.success)
@@ -118,7 +135,13 @@ struct HealthcareDetailView: View {
                         } header: {
                             Text("Awaiting Reimbursement")
                                 .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(Theme.Colors.warning)
+                                .foregroundColor(Theme.Colors.flowCredits)
+                                .textCase(nil)
+                                .listRowInsets(EdgeInsets())
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 6)
+                                .background(Theme.Colors.background)
                         }
                     }
 
@@ -126,16 +149,22 @@ struct HealthcareDetailView: View {
                     if !notSubmittedItems.isEmpty {
                         Section {
                             ForEach(notSubmittedItems) { item in
-                                healthcareRow(item, grayed: false)
+                                healthcareRow(item)
                                     .swipeActions(edge: .trailing) {
                                         Button("Submit") { updateStatus(item, to: "pending") }
-                                            .tint(Theme.Colors.warning)
+                                            .tint(Theme.Colors.textSecondary)
                                     }
                             }
                         } header: {
                             Text("Not Submitted")
                                 .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(Theme.Colors.textSecondary)
+                                .foregroundColor(Theme.Colors.textMuted)
+                                .textCase(nil)
+                                .listRowInsets(EdgeInsets())
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 6)
+                                .background(Theme.Colors.background)
                         }
                     }
 
@@ -143,20 +172,29 @@ struct HealthcareDetailView: View {
                     if !completedItems.isEmpty {
                         Section {
                             ForEach(completedItems) { item in
-                                healthcareRow(item, grayed: false)
+                                healthcareRow(item)
                                     .swipeActions(edge: .trailing) {
                                         Button("Reopen") { updateStatus(item, to: "pending") }
-                                            .tint(Theme.Colors.warning)
+                                            .tint(Theme.Colors.textSecondary)
                                     }
                             }
                         } header: {
                             Text("Reimbursement Complete")
                                 .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(Theme.Colors.success)
+                                .textCase(nil)
+                                .listRowInsets(EdgeInsets())
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 6)
+                                .background(Theme.Colors.background)
                         }
                     }
                 }
-                .listStyle(.insetGrouped)
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .listRowSeparator(.hidden)
+                }
             }
         }
         .background(Theme.Colors.background)
@@ -172,7 +210,7 @@ struct HealthcareDetailView: View {
 
     // MARK: - Row
 
-    private func healthcareRow(_ item: HealthcareItem, grayed: Bool = false) -> some View {
+    private func healthcareRow(_ item: HealthcareItem) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.description ?? "Healthcare")
@@ -189,7 +227,7 @@ struct HealthcareDetailView: View {
                                 StatusBadge(text: "\(Formatters.currency(reimbursed, decimals: false)) back", textColor: Theme.Colors.success, bgColor: Theme.Colors.successBg)
                             }
                         } else if status == "pending" {
-                            StatusBadge(text: "Submitted", textColor: Theme.Colors.warning, bgColor: Theme.Colors.warningBg)
+                            StatusBadge(text: "Submitted", textColor: Theme.Colors.flowCredits, bgColor: Theme.Colors.flowCredits.opacity(0.12))
                         }
                     }
                 }
@@ -198,18 +236,18 @@ struct HealthcareDetailView: View {
             VStack(alignment: .trailing, spacing: 1) {
                 Text(Formatters.currency(abs(item.amount), decimals: false))
                     .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                    .foregroundColor(Theme.Colors.error)
+                    .foregroundColor(Theme.Colors.text)
                 // Show out-of-pocket for items with reimbursement
                 if let reimbursed = item.reimbursed_amount, reimbursed > 0 {
                     let oop = abs(item.amount) - reimbursed
                     if item.reimbursement_status == "complete" {
                         Text("\(Formatters.currency(oop, decimals: false)) out of pocket")
                             .font(.system(size: 10))
-                            .foregroundColor(Theme.Colors.textSecondary)
+                            .foregroundColor(Theme.Colors.textMuted)
                     } else if item.reimbursement_status == "partial" {
                         Text("\(Formatters.currency(oop, decimals: false)) remaining")
                             .font(.system(size: 10))
-                            .foregroundColor(Theme.Colors.warning)
+                            .foregroundColor(Theme.Colors.textMuted)
                     }
                 }
             }
@@ -234,9 +272,16 @@ struct HealthcareDetailView: View {
     }
 
     func loadData() {
+        let cacheKey = "healthcare_\(month)"
+        if items.isEmpty, let cached: [HealthcareItem] = ResponseCache.shared.get(cacheKey) {
+            items = cached
+            loading = false
+        }
         Task {
             do {
-                items = try await APIClient.shared.request("/api/dashboard/healthcare?month=\(month)")
+                let fresh: [HealthcareItem] = try await APIClient.shared.request("/api/dashboard/healthcare?month=\(month)")
+                items = fresh
+                ResponseCache.shared.set(cacheKey, value: fresh)
             } catch {
                 print("Healthcare load error:", error)
             }
@@ -258,15 +303,15 @@ private struct SummaryPill: View {
                 .font(.system(size: 15, weight: .bold))
                 .foregroundColor(color)
             Text(label)
-                .font(.system(size: 8, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundColor(Theme.Colors.textMuted)
-                .tracking(0.5)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .background(Color.white)
+        .cornerRadius(8)
         .overlay(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: 8)
                 .stroke(Theme.Colors.border, lineWidth: 1)
         )
     }

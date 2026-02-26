@@ -23,7 +23,7 @@ struct RecapTabView: View {
     private var isSurplus: Bool { (recap?.surplus_deficit ?? 0) > 0 }
     private var isDeficit: Bool { (recap?.surplus_deficit ?? 0) < 0 }
     private var surplusColor: Color {
-        isSurplus ? Theme.Colors.success : isDeficit ? Theme.Colors.error : Theme.Colors.textSecondary
+        isSurplus ? Theme.Colors.flowSavings : isDeficit ? Theme.Colors.error : Theme.Colors.textSecondary
     }
 
     var body: some View {
@@ -32,7 +32,7 @@ struct RecapTabView: View {
                 // Month navigator
                 monthNavigator
 
-                if loading {
+                if loading && recap == nil {
                     Spacer()
                     ProgressView()
                     Spacer()
@@ -95,7 +95,7 @@ struct RecapTabView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
-                            .background(Theme.Colors.accent)
+                            .background(Theme.Colors.text)
                             .cornerRadius(8)
                         }
                         .disabled(generating)
@@ -179,7 +179,6 @@ struct RecapTabView: View {
             .padding(.horizontal, 16)
         }
         .padding(.vertical, 10)
-        .background(Theme.Colors.surface)
     }
 
     private func typeToggleButton(_ label: String, type: String) -> some View {
@@ -192,13 +191,14 @@ struct RecapTabView: View {
             }
         } label: {
             Text(label)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(recapType == type ? .white : Theme.Colors.textSecondary)
+                .font(.system(size: 13, weight: recapType == type ? .semibold : .medium))
+                .foregroundColor(recapType == type ? Theme.Colors.text : Theme.Colors.textMuted)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 7)
+                .padding(.vertical, 8)
                 .background(
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(recapType == type ? Theme.Colors.accent : Color.clear)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(recapType == type ? Theme.Colors.surface : Color.clear)
+                        .shadow(color: recapType == type ? .black.opacity(0.06) : .clear, radius: 1, x: 0, y: 1)
                 )
         }
     }
@@ -215,10 +215,10 @@ struct RecapTabView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "clock.badge.checkmark")
                         .font(.system(size: 12))
-                        .foregroundColor(Theme.Colors.accent)
+                        .foregroundColor(Theme.Colors.textSecondary)
                     Text("MID-MONTH CHECK-IN")
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(Theme.Colors.accent)
+                        .foregroundColor(Theme.Colors.textSecondary)
                         .tracking(1.5)
                 }
             } else {
@@ -255,8 +255,8 @@ struct RecapTabView: View {
                 .foregroundColor(Theme.Colors.textMuted)
                 .tracking(1)
 
-            let paceColor: Color = mm.onTrack ? Theme.Colors.success :
-                mm.spendingPacePercent <= 120 ? Theme.Colors.warning : Theme.Colors.error
+            let paceColor: Color = mm.onTrack ? Theme.Colors.flowSavings :
+                mm.spendingPacePercent <= 120 ? Theme.Colors.flowCredits : Theme.Colors.error
 
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -292,7 +292,7 @@ struct RecapTabView: View {
                 metricColumn(label: "Avg/Day", value: Formatters.currency(mm.dailyAverageSpend, decimals: false), color: Theme.Colors.text)
                 metricColumn(label: "Need/Day", value: Formatters.currency(max(mm.dailyBudgetNeeded, 0), decimals: false), color: paceColor)
                 metricColumn(label: "Projected", value: Formatters.currency(mm.projectedMonthTotal, decimals: false),
-                             color: mm.projectedMonthTotal <= r.flexible_budget ? Theme.Colors.success : Theme.Colors.error)
+                             color: mm.projectedMonthTotal <= r.flexible_budget ? Theme.Colors.flowSavings : Theme.Colors.error)
             }
         }
         .cardStyle()
@@ -433,15 +433,15 @@ struct RecapTabView: View {
                 .foregroundColor(Theme.Colors.textMuted)
                 .tracking(1)
 
-            barRow(label: "Net Income", amount: r.net_income, maxAmount: r.net_income, color: Theme.Colors.success)
-            barRow(label: "Fixed", amount: r.fixed_expenses, maxAmount: r.net_income, color: Theme.Colors.textSecondary)
-            barRow(label: "Flexible", amount: r.flexible_expenses, maxAmount: r.net_income, color: Theme.Colors.accent)
+            barRow(label: "Net Income", amount: r.net_income, maxAmount: r.net_income, color: Theme.Colors.flowIncome)
+            barRow(label: "Fixed", amount: r.fixed_expenses, maxAmount: r.net_income, color: Theme.Colors.flowFixed)
+            barRow(label: "Flexible", amount: r.flexible_expenses, maxAmount: r.net_income, color: Theme.Colors.flowFlex)
 
             if r.spread_expenses > 0 {
-                barRow(label: "Payoff", amount: r.spread_expenses, maxAmount: r.net_income, color: Theme.Colors.rose)
+                barRow(label: "Payoff", amount: r.spread_expenses, maxAmount: r.net_income, color: Theme.Colors.flowPayoff)
             }
             if r.savings_target > 0 {
-                barRow(label: "Saving", amount: r.savings_target, maxAmount: r.net_income, color: Theme.Colors.teal)
+                barRow(label: "Saving", amount: r.savings_target, maxAmount: r.net_income, color: Theme.Colors.flowSavings)
             }
 
             if !isMidMonth {
@@ -529,7 +529,7 @@ struct RecapTabView: View {
             Divider()
             if let total = r.net_cash_total {
                 HStack { Text("Net Total").font(.system(size: 13, weight: .semibold)).foregroundColor(Theme.Colors.text); Spacer()
-                    Text(Formatters.currency(total, decimals: false)).font(.system(size: 14, weight: .bold)).foregroundColor(total >= 0 ? Theme.Colors.success : Theme.Colors.error) }
+                    Text(Formatters.currency(total, decimals: false)).font(.system(size: 14, weight: .bold)).foregroundColor(total >= 0 ? Theme.Colors.flowSavings : Theme.Colors.error) }
             }
         }
         .cardStyle()
@@ -576,7 +576,7 @@ struct RecapTabView: View {
             Text("GOALS").font(.system(size: 10, weight: .medium)).foregroundColor(Theme.Colors.textMuted).tracking(1)
             ForEach(goals) { goal in
                 HStack(spacing: 10) {
-                    let color: Color = goal.progress >= 1 ? Theme.Colors.success : goal.progress > 0.5 ? Theme.Colors.accent : Theme.Colors.textMuted
+                    let color: Color = goal.progress >= 1 ? Theme.Colors.flowSavings : goal.progress > 0.5 ? Theme.Colors.flowFlex : Theme.Colors.textMuted
                     RingGaugeView(value: goal.currentAmount, maxValue: goal.targetAmount, size: 36, strokeWidth: 3.5, color: color)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(goal.name).font(.system(size: 12, weight: .medium)).foregroundColor(Theme.Colors.text).lineLimit(1)
@@ -656,6 +656,15 @@ struct RecapTabView: View {
     // MARK: - API
 
     private func loadRecap() {
+        let cacheKey = "recap_\(month)_\(recapType)"
+        // Show cached data instantly if available
+        if recap == nil, let cached: RecapResponse = ResponseCache.shared.get(cacheKey) {
+            recap = cached.recap
+            allocations = cached.allocations ?? []
+            goalOptions = cached.options?.goals ?? []
+            spreadOptions = cached.options?.spreads ?? []
+            loading = false
+        }
         Task {
             do {
                 let response: RecapResponse = try await APIClient.shared.request(
@@ -665,9 +674,10 @@ struct RecapTabView: View {
                 allocations = response.allocations ?? []
                 goalOptions = response.options?.goals ?? []
                 spreadOptions = response.options?.spreads ?? []
+                ResponseCache.shared.set(cacheKey, value: response)
             } catch {
                 // If specific type not found, try the other
-                recap = nil
+                if recap == nil { recap = nil }
             }
             loading = false
         }

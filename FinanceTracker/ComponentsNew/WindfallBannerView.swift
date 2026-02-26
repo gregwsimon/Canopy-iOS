@@ -21,10 +21,10 @@ struct WindfallBannerView: View {
                 // Text
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(count) credit\(count == 1 ? "" : "s") need triage")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(Theme.Colors.text)
                     Text(Formatters.currency(total, decimals: false) + " total")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12))
                         .foregroundColor(Theme.Colors.textSecondary)
                 }
 

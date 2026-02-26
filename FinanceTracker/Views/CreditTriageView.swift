@@ -14,7 +14,7 @@ struct CreditTriageView: View {
     @State private var activeCredit: Int? = nil
     @State private var actionMode: ActionMode? = nil
     @State private var allocating = false
-    @State private var selectedTab = 0 // 0 = Unallocated, 1 = Allocated
+    @State private var showAllAllocated = false
 
     // Sheet states
     @State private var showTransactionFinder = false
@@ -43,22 +43,133 @@ struct CreditTriageView: View {
         credits.reduce(0) { $0 + ($1.remainingAmount ?? $1.amount) }
     }
 
-    var body: some View {
-        VStack(spacing: 0) {
-            // Segmented picker
-            Picker("", selection: $selectedTab) {
-                Text("Unallocated (\(credits.count))").tag(0)
-                Text("Allocated (\(allocatedCredits.count))").tag(1)
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.top, 8)
+    private var totalAllocated: Double {
+        allocatedCredits.reduce(0) { $0 + $1.amount }
+    }
 
-            if selectedTab == 0 {
-                unallocatedContent
-            } else {
-                allocatedContent
+    private var triageProgress: Double {
+        let total = totalUnallocated + totalAllocated
+        guard total > 0 else { return 1.0 }
+        return totalAllocated / total
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                // Header: "$X to allocate · N credits" + progress bar
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(Formatters.currency(totalUnallocated))
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(credits.isEmpty && !loading ? Theme.Colors.textMuted : Theme.Colors.success)
+                        Text("to allocate")
+                            .font(.system(size: 14))
+                            .foregroundColor(Theme.Colors.textSecondary)
+                        Text("·")
+                            .font(.system(size: 14))
+                            .foregroundColor(Theme.Colors.textMuted)
+                        Text("\(credits.count) credit\(credits.count == 1 ? "" : "s")")
+                            .font(.system(size: 14))
+                            .foregroundColor(Theme.Colors.textSecondary)
+                    }
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 1.5)
+                                .fill(Theme.Colors.divider)
+                                .frame(height: 3)
+                            RoundedRectangle(cornerRadius: 1.5)
+                                .fill(Theme.Colors.success)
+                                .frame(width: geo.size.width * triageProgress, height: 3)
+                        }
+                    }
+                    .frame(height: 3)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 16)
+
+                // Unallocated credits
+                if loading {
+                    ProgressView()
+                        .padding(.top, 40)
+                        .padding(.bottom, 40)
+                } else if credits.isEmpty {
+                    // "All caught up" empty state
+                    VStack(spacing: 10) {
+                        ZStack {
+                            Circle()
+                                .fill(Theme.Colors.success.opacity(0.08))
+                                .frame(width: 48, height: 48)
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundColor(Theme.Colors.success)
+                        }
+                        Text("All caught up")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(Theme.Colors.textMuted)
+                    }
+                    .padding(.top, 32)
+                    .padding(.bottom, 32)
+                } else {
+                    VStack(spacing: 12) {
+                        ForEach(credits) { credit in
+                            creditRow(credit)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+
+                // Allocated section (inline, below unallocated)
+                if !loading && !allocatedCredits.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        // Section header
+                        HStack {
+                            Text("Allocated · \(allocatedCredits.count)")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundColor(Theme.Colors.textMuted)
+                            Spacer()
+                            if allocatedCredits.count > 3 {
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        showAllAllocated.toggle()
+                                    }
+                                } label: {
+                                    Text(showAllAllocated ? "Show less" : "See all ›")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Theme.Colors.textMuted)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+
+                        // Compact allocated rows
+                        let displayedCredits = showAllAllocated ? allocatedCredits : Array(allocatedCredits.prefix(3))
+                        VStack(spacing: 0) {
+                            ForEach(displayedCredits) { credit in
+                                Button {
+                                    if let alloc = credit.allocations?.first {
+                                        allocationToRevert = alloc
+                                    }
+                                } label: {
+                                    allocatedCompactRow(credit)
+                                }
+                                .buttonStyle(.plain)
+                                if credit.id != displayedCredits.last?.id {
+                                    Divider()
+                                        .padding(.horizontal, 14)
+                                }
+                            }
+                        }
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.top, 24)
+                    .padding(.bottom, 16)
+                }
             }
+            .padding(.bottom, 16)
         }
         .background(Theme.Colors.background)
         .toastError($toastError)
@@ -126,104 +237,33 @@ struct CreditTriageView: View {
         }
     }
 
-    // MARK: - Tab Content
-
-    private var unallocatedContent: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                // Summary pill
-                VStack(spacing: 4) {
-                    Text(Formatters.currency(totalUnallocated))
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundColor(Theme.Colors.amber)
-                    Text("UNALLOCATED")
-                        .font(.system(size: 8, weight: .medium))
-                        .foregroundColor(Theme.Colors.textMuted)
-                        .tracking(0.5)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(Color.white)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(Theme.Colors.border, lineWidth: 1))
-                .padding(.horizontal)
-
-                if loading {
-                    ProgressView()
-                        .padding(.top, 40)
-                } else if credits.isEmpty {
-                    Text("No unallocated credits")
-                        .font(.system(size: 13))
-                        .foregroundColor(Theme.Colors.textMuted)
-                        .padding(.top, 40)
-                } else {
-                    VStack(spacing: 12) {
-                        ForEach(credits) { credit in
-                            creditRow(credit)
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-            }
-            .padding(.vertical)
-        }
-    }
-
-    private var allocatedContent: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                if loading {
-                    ProgressView()
-                        .padding(.top, 40)
-                } else if allocatedCredits.isEmpty {
-                    Text("No allocated credits this month")
-                        .font(.system(size: 13))
-                        .foregroundColor(Theme.Colors.textMuted)
-                        .padding(.top, 40)
-                } else {
-                    ForEach(allocatedCredits) { credit in
-                        allocatedCreditRow(credit)
-                    }
-                }
-            }
-            .padding()
-        }
-    }
-
     // MARK: - Row Views
 
-    private func allocatedCreditRow(_ credit: CreditItem) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(credit.description ?? "Credit")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Theme.Colors.textSecondary)
-                    HStack(spacing: 6) {
-                        Text(Formatters.shortDate(credit.date))
-                            .font(.system(size: 11))
-                            .foregroundColor(Theme.Colors.textMuted)
-                        if let acct = credit.accountName {
-                            Text(acct)
-                                .font(.system(size: 11))
-                                .foregroundColor(Theme.Colors.textMuted)
-                        }
-                    }
+    /// Compact row for the inline allocated section
+    private func allocatedCompactRow(_ credit: CreditItem) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(credit.description ?? "Credit")
+                    .font(.system(size: 13))
+                    .foregroundColor(Theme.Colors.textSecondary)
+                    .lineLimit(1)
+                if let allocations = credit.allocations, let first = allocations.first {
+                    Text(first.label ?? first.type)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(Theme.Colors.textMuted)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Theme.Colors.divider)
+                        .cornerRadius(4)
                 }
-                Spacer()
-                Text("+\(Formatters.currency(credit.amount))")
-                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                    .foregroundColor(Theme.Colors.success.opacity(0.6))
             }
-
-            // Allocation chips with revert buttons
-            if let allocations = credit.allocations, !allocations.isEmpty {
-                revertableAllocationChips(allocations)
-            }
+            Spacer()
+            Text(Formatters.currency(credit.amount))
+                .font(.system(size: 13, weight: .medium, design: .monospaced))
+                .foregroundColor(Theme.Colors.textMuted)
         }
-        .padding(14)
-        .background(Color.white)
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.Colors.border, lineWidth: 1))
-        .opacity(0.8)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
     }
 
     @ViewBuilder
@@ -257,7 +297,7 @@ struct CreditTriageView: View {
                     if hasAllocations {
                         Text("\(Formatters.currency(remaining)) left")
                             .font(.system(size: 11))
-                            .foregroundColor(Theme.Colors.amber)
+                            .foregroundColor(Theme.Colors.flowCredits)
                     }
                 }
             }
@@ -276,7 +316,7 @@ struct CreditTriageView: View {
                             .fill(Theme.Colors.border)
                             .frame(height: 3)
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Theme.Colors.success)
+                            .fill(Theme.Colors.flowSavings)
                             .frame(width: geo.size.width * min(progress, 1.0), height: 3)
                     }
                 }
@@ -292,6 +332,7 @@ struct CreditTriageView: View {
         }
         .padding(14)
         .background(Color.white)
+        .cornerRadius(8)
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.Colors.border, lineWidth: 1))
     }
 
@@ -302,9 +343,9 @@ struct CreditTriageView: View {
                     let color = colorForAllocType(alloc.type)
                     HStack(spacing: 3) {
                         Text("→")
-                            .font(.system(size: 9))
+                            .font(.system(size: 10))
                         Text("\(alloc.label ?? alloc.type) \(Formatters.currency(alloc.amount))")
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.system(size: 12, weight: .medium))
                     }
                     .foregroundColor(Color(hex: color))
                     .padding(.horizontal, 6)
@@ -326,16 +367,16 @@ struct CreditTriageView: View {
                     } label: {
                         HStack(spacing: 3) {
                             Text("→")
-                                .font(.system(size: 9))
+                                .font(.system(size: 10))
                             Text("\(alloc.label ?? alloc.type) \(Formatters.currency(alloc.amount))")
-                                .font(.system(size: 10, weight: .medium))
+                                .font(.system(size: 12, weight: .medium))
                             if revertingId == alloc.id {
                                 ProgressView()
                                     .scaleEffect(0.5)
                                     .frame(width: 10, height: 10)
                             } else {
                                 Image(systemName: "xmark")
-                                    .font(.system(size: 7, weight: .bold))
+                                    .font(.system(size: 10, weight: .bold))
                                     .opacity(0.5)
                             }
                         }
@@ -354,53 +395,63 @@ struct CreditTriageView: View {
 
     private func colorForAllocType(_ type: String) -> String {
         switch type {
-        case "category_offset": return "#3b82f6"
-        case "spread_offset": return "#e11d48"
-        case "goal": return "#0d9488"
-        case "income": return "#0caa41"
-        case "return": return "#8b5cf6"
-        case "healthcare": return "#f5a623"
+        case "category_offset": return "#7b93c9" // flowFlex
+        case "spread_offset": return "#8e8e93"   // flowFixed
+        case "goal": return "#3d8b80"             // flowSavings
+        case "income": return "#6b9e78"           // flowIncome
+        case "return": return "#7ec8d4"           // flowPayoff
+        case "healthcare": return "#c49a6c"       // flowCredits
         default: return "#666"
         }
     }
 
     @ViewBuilder
     private func actionButtons(for credit: CreditItem) -> some View {
-        HStack(spacing: 8) {
-            actionChip("Income", color: "#0caa41") {
+        VStack(spacing: 8) {
+            triageActionButton("It's income", color: Theme.Colors.flowIncome) {
                 activeCredit = credit.id
                 actionMode = .income
             }
-            actionChip("Goal", color: "#0d9488") {
-                activeCredit = credit.id
-                actionMode = .goal
-            }
-            actionChip("Return", color: "#8b5cf6") {
+            triageActionButton("It's a return", color: Theme.Colors.flowPayoff) {
                 activeCredit = credit.id
                 finderType = "return"
                 showTransactionFinder = true
             }
-            actionChip("Reimburse", color: "#f5a623") {
+            triageActionButton("Offset spending", color: Theme.Colors.flowFlex) {
+                activeCredit = credit.id
+                actionMode = .offset
+            }
+            triageActionButton("Healthcare reimburse", color: Theme.Colors.flowCredits) {
                 activeCredit = credit.id
                 finderType = "healthcare"
                 showTransactionFinder = true
             }
-            actionChip("Offset", color: "#3b82f6") {
+            triageActionButton("Add to goal", color: Theme.Colors.flowSavings) {
                 activeCredit = credit.id
-                actionMode = .offset
+                actionMode = .goal
             }
         }
     }
 
-    private func actionChip(_ label: String, color: String, action: @escaping () -> Void) -> some View {
+    private func triageActionButton(_ label: String, color: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(label)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(Color(hex: color))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Color(hex: color).opacity(0.1))
-                .cornerRadius(5)
+            HStack(spacing: 12) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(color)
+                    .frame(width: 3, height: 20)
+                Text(label)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Theme.Colors.text)
+                Spacer()
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 14)
+            .background(Color.white)
+            .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Theme.Colors.border, lineWidth: 1)
+            )
         }
         .disabled(allocating)
     }
@@ -416,10 +467,9 @@ struct CreditTriageView: View {
 
                 // Spread expenses section
                 if !spreadItems.isEmpty {
-                    Text("SPREAD EXPENSES")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundColor(Theme.Colors.rose.opacity(0.7))
-                        .tracking(0.3)
+                    Text("Spread expenses")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(Theme.Colors.flowFixed.opacity(0.7))
                         .padding(.horizontal, 10)
                         .padding(.top, 4)
 
@@ -462,7 +512,7 @@ struct CreditTriageView: View {
                                 Spacer()
                                 Text(Formatters.currency(item.monthlyPortion) + "/mo")
                                     .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                    .foregroundColor(Theme.Colors.rose)
+                                    .foregroundColor(Theme.Colors.flowFixed)
                             }
                             .padding(.vertical, 7)
                             .padding(.horizontal, 10)
@@ -473,10 +523,9 @@ struct CreditTriageView: View {
                     Divider()
                         .padding(.vertical, 4)
 
-                    Text("CATEGORIES")
-                        .font(.system(size: 9, weight: .semibold))
+                    Text("Categories")
+                        .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(Theme.Colors.textMuted)
-                        .tracking(0.3)
                         .padding(.horizontal, 10)
                 }
 
@@ -507,9 +556,8 @@ struct CreditTriageView: View {
                         ForEach(groupedCategories, id: \.parent.id) { group in
                             // Parent header
                             Text(group.parent.name)
-                                .font(.system(size: 10, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(Theme.Colors.textMuted)
-                                .tracking(0.3)
                                 .padding(.horizontal, 10)
                                 .padding(.top, 10)
                                 .padding(.bottom, 2)
@@ -747,17 +795,32 @@ struct CreditTriageView: View {
                     method: "POST",
                     body: body
                 )
-                // Reload to get updated remaining amounts
-                loadData()
+                // Optimistic UI: move credit out of unallocated immediately
+                if let idx = credits.firstIndex(where: { $0.id == creditId }) {
+                    let credit = credits[idx]
+                    let remaining = (credit.remainingAmount ?? credit.amount) - amount
+                    if remaining <= 0.01 {
+                        // Fully allocated — move to allocated list
+                        let moved = credits.remove(at: idx)
+                        allocatedCredits.insert(moved, at: 0)
+                    } else {
+                        // Partial — update remaining
+                        credits[idx].remainingAmount = remaining
+                        credits[idx].allocatedAmount = (credit.allocatedAmount ?? 0) + amount
+                    }
+                }
                 pendingAllocation = nil
                 activeCredit = nil
                 actionMode = nil
+                allocating = false
                 onAllocated?()
                 toastSuccess = "Allocated successfully"
+                // Background refresh for accurate server state
+                loadData()
             } catch {
                 toastError = "Allocation failed"
+                allocating = false
             }
-            allocating = false
         }
     }
 

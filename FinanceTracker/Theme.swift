@@ -54,29 +54,38 @@ enum Theme {
     // MARK: Colors
 
     enum Colors {
-        static let background = Color(hex: "#fafafa")
+        static let background = Color(hex: "#f3f1ee")
         static let surface = Color.white
+        static let surfaceSolid = Color(hex: "#faf8f6")
         static let text = Color(hex: "#171717")
         static let textSecondary = Color(hex: "#666666")
         static let textMuted = Color(hex: "#999999")
         static let textDisabled = Color(hex: "#cccccc")
-        static let border = Color(hex: "#eaeaea")
-        static let divider = Color(hex: "#f5f5f5")
-        static let subtleBg = Color(hex: "#f0f0f0")
+        static let border = Color.black.opacity(0.06)
+        static let divider = Color.black.opacity(0.04)
+        static let subtleBg = Color.black.opacity(0.04)
 
         // Semantic
         static let success = Color(hex: "#0caa41")
         static let error = Color(hex: "#e00000")
         static let warning = Color(hex: "#f5a623")
         static let accent = Color(hex: "#166534")
-        static let teal = Color(hex: "#0d9488")
-        static let tealLight = Color(hex: "#14b8a6")
+        static let teal = Color(hex: "#2a9d8f")
+        static let tealLight = Color(hex: "#40b4a6")
         static let brandGreen = Color(hex: "#22c55e")
         static let forest = Color(hex: "#1a2e2a")
-        static let flexBlue = Color(hex: "#60a5fa")
-        static let rose = Color(hex: "#e11d48")
+        static let flexBlue = Color(hex: "#5b8cb8")
+        static let rose = Color(hex: "#c4616c")
         static let purple = Color(hex: "#8b5cf6")
         static let amber = Color(hex: "#f59e0b")
+
+        // Flow chart palette
+        static let flowIncome = Color(hex: "#6b9e78")
+        static let flowFixed = Color(hex: "#8e8e93")
+        static let flowSavings = Color(hex: "#3d8b80")
+        static let flowPayoff = Color(hex: "#7ec8d4")
+        static let flowFlex = Color(hex: "#7b93c9")
+        static let flowCredits = Color(hex: "#c49a6c")
 
         // Status backgrounds
         static let successBg = Color(hex: "#dcfce7")
@@ -91,15 +100,19 @@ enum Theme {
     // MARK: Fonts
 
     enum Fonts {
-        static let largeMetric = Font.system(size: 28, weight: .semibold)
+        // Unified type scale
+        static let hero = Font.system(size: 34, weight: .semibold, design: .serif)
+        static let section = Font.system(size: 22, weight: .semibold)
+        static let emphasis = Font.system(size: 16, weight: .medium)
+        static let largeMetric = Font.system(size: 34, weight: .semibold)
         static let title = Font.system(size: 15, weight: .semibold)
         static let body = Font.system(size: 14, weight: .medium)
         static let bodyRegular = Font.system(size: 14)
-        static let caption = Font.system(size: 13)
+        static let caption = Font.system(size: 12)
         static let small = Font.system(size: 12)
-        static let micro = Font.system(size: 11)
+        static let micro = Font.system(size: 10)
         static let nano = Font.system(size: 10)
-        static let sectionHeader = Font.system(size: 10, weight: .medium)
+        static let sectionHeader = Font.system(size: 12, weight: .medium)
         static let formLabel = Font.system(size: 12, weight: .medium)
 
         static func currency(_ size: CGFloat = 14, weight: Font.Weight = .semibold) -> Font {
@@ -119,7 +132,7 @@ enum Theme {
     // MARK: Radii
 
     enum Radii {
-        static let card: CGFloat = 8
+        static let card: CGFloat = 16
         static let button: CGFloat = 8
         static let input: CGFloat = 6
         static let badge: CGFloat = 3
@@ -139,6 +152,7 @@ struct CardStyle: ViewModifier {
                 RoundedRectangle(cornerRadius: Theme.Radii.card)
                     .stroke(Theme.Colors.border, lineWidth: 1)
             )
+            .shadow(color: .black.opacity(0.06), radius: 2, x: 0, y: 1)
     }
 }
 
@@ -147,8 +161,6 @@ struct SectionHeaderStyle: ViewModifier {
         content
             .font(Theme.Fonts.sectionHeader)
             .foregroundColor(Theme.Colors.textSecondary)
-            .tracking(1)
-            .textCase(.uppercase)
     }
 }
 
@@ -171,20 +183,13 @@ struct SortToggle: View {
         Button {
             order = order == .date ? .amount : .date
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: 3) {
                 Image(systemName: "arrow.up.arrow.down")
+                    .font(.system(size: 10))
                 Text(order.rawValue)
+                    .font(.system(size: 13, weight: .medium))
             }
-            .font(.system(size: 12, weight: .medium))
-            .foregroundColor(Theme.Colors.textSecondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(Theme.Colors.surface)
-            .cornerRadius(6)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Theme.Colors.border, lineWidth: 1)
-            )
+            .foregroundColor(Theme.Colors.textMuted)
         }
         .buttonStyle(.plain)
     }

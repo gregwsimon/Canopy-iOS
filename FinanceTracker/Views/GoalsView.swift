@@ -9,34 +9,38 @@ struct GoalsView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    if loading {
-                        ProgressView()
+            ZStack {
+                Theme.Colors.background.ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        if loading && goals.isEmpty {
+                            ProgressView()
+                                .padding(.top, 60)
+                        } else if goals.isEmpty {
+                            VStack(spacing: 12) {
+                                GoalTreeView(progress: 0, size: 48)
+                                Text("Plant your first goal")
+                                    .font(Theme.Fonts.bodyRegular)
+                                    .foregroundColor(Theme.Colors.textSecondary)
+                                Text("Every canopy starts with a single seed.")
+                                    .font(Theme.Fonts.small)
+                                    .foregroundColor(Theme.Colors.textMuted)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .frame(maxWidth: .infinity)
                             .padding(.top, 60)
-                    } else if goals.isEmpty {
-                        VStack(spacing: 12) {
-                            GoalTreeView(progress: 0, size: 48)
-                            Text("Plant your first goal")
-                                .font(Theme.Fonts.bodyRegular)
-                                .foregroundColor(Theme.Colors.textSecondary)
-                            Text("Every canopy starts with a single seed.")
-                                .font(Theme.Fonts.small)
-                                .foregroundColor(Theme.Colors.textMuted)
-                                .multilineTextAlignment(.center)
+                        } else {
+                            ForEach(goals) { goal in
+                                GoalDetailCard(goal: goal, onUpdate: loadGoals, onError: { toastError = $0 }, onSuccess: { toastSuccess = $0 })
+                            }
+                            .padding(.horizontal)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 60)
-                    } else {
-                        ForEach(goals) { goal in
-                            GoalDetailCard(goal: goal, onUpdate: loadGoals, onError: { toastError = $0 }, onSuccess: { toastSuccess = $0 })
-                        }
-                        .padding(.horizontal)
                     }
+                    .padding(.vertical)
                 }
-                .padding(.vertical)
+                .scrollIndicators(.hidden)
             }
-            .background(Theme.Colors.background)
             .navigationTitle("Goals")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -57,11 +61,17 @@ struct GoalsView: View {
     }
 
     func loadGoals() {
-        loading = true
+        // Show cached data instantly if available
+        if goals.isEmpty, let cached: GoalsResponse = ResponseCache.shared.get("goals") {
+            goals = cached.goals
+            loading = false
+        }
+        if goals.isEmpty { loading = true }
         Task {
             do {
                 let response: GoalsResponse = try await APIClient.shared.request("/api/goals")
                 goals = response.goals
+                ResponseCache.shared.set("goals", value: response)
             } catch {
                 toastError = "Failed to load goals"
             }
@@ -116,27 +126,27 @@ struct GoalDetailCard: View {
                         if goal.isSavingsTarget == true {
                             Text("Saving")
                                 .font(.system(size: 9, weight: .semibold))
-                                .foregroundColor(Theme.Colors.teal)
+                                .foregroundColor(Theme.Colors.flowFlex)
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 2)
-                                .background(Theme.Colors.tealBg)
+                                .background(Theme.Colors.flowFlex.opacity(0.08))
                                 .cornerRadius(Theme.Radii.badge)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: Theme.Radii.badge)
-                                        .stroke(Theme.Colors.teal.opacity(0.3), lineWidth: 0.5)
+                                        .stroke(Theme.Colors.flowFlex.opacity(0.3), lineWidth: 0.5)
                                 )
                         }
                         if goal.isPayoff == true {
                             Text("Payoff")
                                 .font(.system(size: 9, weight: .semibold))
-                                .foregroundColor(Theme.Colors.rose)
+                                .foregroundColor(Theme.Colors.flowPayoff)
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 2)
-                                .background(Theme.Colors.roseBg)
+                                .background(Theme.Colors.flowPayoff.opacity(0.12))
                                 .cornerRadius(Theme.Radii.badge)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: Theme.Radii.badge)
-                                        .stroke(Theme.Colors.rose.opacity(0.3), lineWidth: 0.5)
+                                        .stroke(Theme.Colors.flowPayoff.opacity(0.3), lineWidth: 0.5)
                                 )
                         }
                     }

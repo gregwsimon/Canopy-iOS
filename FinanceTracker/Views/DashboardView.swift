@@ -56,14 +56,16 @@ struct DashboardView: View {
                 .padding(.horizontal)
                 .padding(.top, 8)
 
+                if loading && dashboardData == nil {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                } else {
                 // Scrollable card content — vertically centered
                 GeometryReader { geo in
                     ScrollView {
                         VStack(spacing: 0) {
-                            if loading && dashboardData == nil {
-                                ProgressView()
-                                    .padding(.top, 60)
-                            } else if let data = dashboardData {
+                            if let data = dashboardData {
                                 let savings = data.savingsTarget ?? 0
 
                                 // Hero Zone
@@ -149,6 +151,7 @@ struct DashboardView: View {
                         dashboardData = try? await APIClient.shared.request("/api/dashboard?\(params)")
                     }
                 }
+                } // end else (data loaded)
             }
             .background(Theme.Colors.background)
             .toolbar(.hidden, for: .navigationBar)

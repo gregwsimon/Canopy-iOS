@@ -94,7 +94,7 @@ struct NetCashCardView: View {
                     if goalEarmarked > 0 {
                         Button { onGoalsTap?() } label: {
                             HStack(spacing: 4) {
-                                Text("Earmarked goals")
+                                Text("Earmarked savings")
                                     .font(.system(size: 11, weight: .medium))
                                     .foregroundColor(Theme.Colors.textSecondary)
                                     .lineLimit(1)

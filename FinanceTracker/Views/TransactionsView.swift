@@ -6,7 +6,6 @@ struct TransactionsView: View {
     @State private var loading = true
     @State private var showAdd = false
     @State private var syncing = false
-    @State private var syncMessage = ""
     @State private var editingTransaction: Transaction?
     @State private var recategorizeTxn: Transaction?
     @State private var accountFilter: AccountFilter = .all
@@ -44,6 +43,10 @@ struct TransactionsView: View {
         return map
     }
 
+    private var hasActiveFilter: Bool {
+        accountFilter != .all || selectedCategoryFilter != nil
+    }
+
     private var filteredTransactions: [Transaction] {
         var result: [Transaction]
         switch accountFilter {
@@ -75,7 +78,7 @@ struct TransactionsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Controls
+                // Row 1: Month picker + filter + sort
                 HStack {
                     Button(action: { adjustMonth(-1) }) {
                         Image(systemName: "chevron.left")
@@ -88,85 +91,108 @@ struct TransactionsView: View {
 
                     Spacer()
 
-                    Button(syncing ? "Syncing..." : "Sync") {
-                        syncFromBank()
+                    // Filter menu (account + category)
+                    Menu {
+                        // Account section
+                        Section("Account") {
+                            ForEach(AccountFilter.allCases, id: \.self) { filter in
+                                Button {
+                                    accountFilter = filter
+                                } label: {
+                                    Label(filter.rawValue, systemImage: accountFilter == filter ? "checkmark.circle.fill" : "circle")
+                                }
+                            }
+                        }
+                        // Category section
+                        if !categoryFilters.isEmpty {
+                            Section("Category") {
+                                Button {
+                                    selectedCategoryFilter = nil
+                                } label: {
+                                    Label("All Categories", systemImage: selectedCategoryFilter == nil ? "checkmark.circle.fill" : "circle")
+                                }
+                                ForEach(categoryFilters, id: \.self) { cat in
+                                    Button {
+                                        selectedCategoryFilter = cat
+                                    } label: {
+                                        Label(cat, systemImage: selectedCategoryFilter == cat ? "checkmark.circle.fill" : "circle")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        ZStack(alignment: .topTrailing) {
+                            Image(systemName: "line.3.horizontal.decrease")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(hasActiveFilter ? Theme.Colors.accent : Theme.Colors.textSecondary)
+                                .frame(width: 32, height: 32)
+                            if hasActiveFilter {
+                                Circle()
+                                    .fill(Theme.Colors.accent)
+                                    .frame(width: 6, height: 6)
+                                    .offset(x: -4, y: 4)
+                            }
+                        }
                     }
-                    .disabled(syncing)
-                    .font(.system(size: 13, weight: .medium))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Theme.Colors.surfaceSolid)
-                    .cornerRadius(6)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(Theme.Colors.border, lineWidth: 1)
-                    )
 
                     SortToggle(order: $sortOrder)
                 }
-                .padding()
-
-                // Account filter
-                Picker("Account", selection: $accountFilter) {
-                    ForEach(AccountFilter.allCases, id: \.self) { filter in
-                        Text(filter.rawValue).tag(filter)
-                    }
-                }
-                .pickerStyle(.segmented)
                 .padding(.horizontal)
-                .padding(.bottom, 8)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+                .fixedSize(horizontal: false, vertical: true)
 
-                // Search bar
+                // Row 2: Search bar + active filter chip
                 HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(Theme.Colors.textMuted)
-                        .font(.system(size: 13))
-                    TextField("Search transactions...", text: $searchText)
-                        .font(.system(size: 14))
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                    if !searchText.isEmpty {
+                    HStack(spacing: 6) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(Theme.Colors.textMuted)
+                            .font(.system(size: 12))
+                        TextField("Search...", text: $searchText)
+                            .font(.system(size: 13))
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
                         Button {
                             searchText = ""
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(Theme.Colors.textMuted)
-                                .font(.system(size: 13))
+                                .font(.system(size: 12))
+                        }
+                        .opacity(searchText.isEmpty ? 0 : 1)
+                        .allowsHitTesting(!searchText.isEmpty)
+                    }
+                    .padding(.horizontal, 10)
+                    .frame(height: 34)
+                    .background(Theme.Colors.surfaceSolid)
+                    .cornerRadius(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Theme.Colors.border, lineWidth: 1)
+                    )
+
+                    // Show active filter as a dismissible chip
+                    if let cat = selectedCategoryFilter {
+                        Button {
+                            selectedCategoryFilter = nil
+                        } label: {
+                            HStack(spacing: 3) {
+                                Text(cat)
+                                    .font(.system(size: 11, weight: .medium))
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 8, weight: .bold))
+                            }
+                            .foregroundColor(Theme.Colors.accent)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 5)
+                            .background(Theme.Colors.accent.opacity(0.08))
+                            .cornerRadius(12)
                         }
                     }
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(Theme.Colors.surfaceSolid)
-                .cornerRadius(8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Theme.Colors.border, lineWidth: 1)
-                )
                 .padding(.horizontal)
                 .padding(.bottom, 6)
-
-                // Category filter pills
-                if !categoryFilters.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 6) {
-                            categoryPill(name: "All", value: nil, color: "#171717")
-                            ForEach(categoryFilters, id: \.self) { cat in
-                                categoryPill(name: cat, value: cat, color: categoryColorMap[cat] ?? "#171717")
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .padding(.bottom, 6)
-                }
-
-                if !syncMessage.isEmpty {
-                    Text(syncMessage)
-                        .font(.system(size: 12))
-                        .foregroundColor(syncMessage.contains("failed") ? Theme.Colors.error : Theme.Colors.accent)
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
-                }
+                .fixedSize(horizontal: false, vertical: true)
 
                 if loading && transactions.isEmpty {
                     Spacer()
@@ -237,7 +263,7 @@ struct TransactionsView: View {
                                 Button { recategorizeTxn = txn } label: {
                                     Image(systemName: "folder")
                                 }
-                                .tint(Theme.Colors.flowIncome)
+                                .tint(.blue)
 
                                 if txn.category_type == "expense" {
                                     Button { toggleFixed(txn) } label: {
@@ -254,7 +280,7 @@ struct TransactionsView: View {
                                         Button { toggleReturn(txn) } label: {
                                             Image(systemName: "arrow.uturn.left")
                                         }
-                                        .tint(Theme.Colors.flowPayoff)
+                                        .tint(Theme.Colors.flowCredits)
                                     }
                                 }
 
@@ -283,6 +309,9 @@ struct TransactionsView: View {
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
+                    .refreshable {
+                        await syncAndReload()
+                    }
                 }
             }
             .background(Theme.Colors.background)
@@ -338,19 +367,15 @@ struct TransactionsView: View {
         }
     }
 
-    func syncFromBank() {
+    func syncAndReload() async {
         syncing = true
-        syncMessage = ""
-        Task {
-            do {
-                let result: SyncResult = try await APIClient.shared.request("/api/plaid/sync", method: "POST", body: [:], timeout: 120)
-                syncMessage = "Synced \(result.transactions_added) new transactions"
-                loadData()
-            } catch {
-                syncMessage = "Sync failed"
-            }
-            syncing = false
+        do {
+            let _: SyncResult = try await APIClient.shared.request("/api/plaid/sync", method: "POST", body: [:], timeout: 120)
+            loadData()
+        } catch {
+            print("Sync failed:", error)
         }
+        syncing = false
     }
 
     func toggleFixed(_ txn: Transaction) {
@@ -440,22 +465,4 @@ struct TransactionsView: View {
         }
     }
 
-    func categoryPill(name: String, value: String?, color: String = "#171717") -> some View {
-        let isSelected = selectedCategoryFilter == value
-        return Button {
-            selectedCategoryFilter = value
-        } label: {
-            Text(name)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(isSelected ? .white : Theme.Colors.textSecondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(isSelected ? Color(hex: color) : Theme.Colors.surfaceSolid)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Theme.Colors.border, lineWidth: isSelected ? 0 : 1)
-                )
-        }
-    }
 }

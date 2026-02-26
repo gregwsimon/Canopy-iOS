@@ -9,6 +9,7 @@ struct PulseCardView: View {
     let flexibleRemaining: Double
     let flexibleBudget: Double
     let daysRemaining: Int
+    let daysInMonth: Int
     let dailyBudget: Double
     var historicalPace: Double? = nil
     var savingsTarget: Double = 0
@@ -86,46 +87,48 @@ struct PulseCardView: View {
                     progress: animatedProgress,
                     spentLabel: "\(Formatters.currency(spent, decimals: false)) spent",
                     totalLabel: Formatters.currency(flexibleBudget, decimals: false),
-                    percentLabel: "\(remainingPercent)%",
                     color: thresholdColor,
                     isOverBudget: isOverBudget
                 )
                 .padding(.bottom, 14)
 
-                // Footer: pace left, $/day + days right
-                HStack {
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(thresholdColor)
-                            .frame(width: 6, height: 6)
-                        if isOverBudget {
-                            Text("\(abs(remainingPercent))% over budget")
-                                .font(.system(size: 13))
-                                .foregroundColor(Theme.Colors.textSecondary)
-                        } else if let deviation = paceDeviation {
-                            HStack(spacing: 2) {
-                                Image(systemName: deviation >= 0 ? "arrow.up.right" : "arrow.down.right")
-                                    .font(.system(size: 10, weight: .semibold))
-                                    .foregroundColor(thresholdColor)
-                                Text("\(abs(deviation))%")
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundColor(thresholdColor)
-                                Text("pace")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(Theme.Colors.textSecondary)
-                            }
-                        } else {
-                            Text("\(Formatters.currency(dailyBudget, decimals: false))/day pace")
-                                .font(.system(size: 13))
-                                .foregroundColor(Theme.Colors.textSecondary)
+                // Footer: $X/day · X days left · ↗ X% pace
+                HStack(spacing: 0) {
+                    if isOverBudget {
+                        Text("\(Formatters.currency(abs(flexibleRemaining), decimals: false)) over budget")
+                            .font(.system(size: 11))
+                            .foregroundColor(Theme.Colors.textSecondary)
+                    } else {
+                        Text("\(Formatters.currency(dailyBudget, decimals: false))/day")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(Theme.Colors.textSecondary)
+                        Text(" · ")
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: "#cccccc"))
+                        Text("\(daysRemaining) \(daysRemaining == 1 ? "day" : "days") left")
+                            .font(.system(size: 11))
+                            .foregroundColor(Theme.Colors.textSecondary)
+                        Text(" · ")
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: "#cccccc"))
+
+                        let daysElapsed = max(daysInMonth - daysRemaining, 1)
+                        let expectedPct = Double(daysElapsed) / Double(daysInMonth)
+                        let actualPct = flexibleBudget > 0 ? spent / flexibleBudget : 0
+                        let paceRaw = expectedPct > 0 ? Int(round(((actualPct / expectedPct) - 1) * 100)) : 0
+                        let paceAbs = abs(paceRaw)
+                        let paceColor = paceRaw > 5 ? thresholdColor : (paceRaw < -5 ? Theme.Colors.success : Theme.Colors.textMuted)
+
+                        HStack(spacing: 2) {
+                            Image(systemName: paceRaw > 0 ? "arrow.up.right" : (paceRaw < 0 ? "arrow.down.right" : "arrow.right"))
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundColor(paceColor)
+                            Text("\(paceAbs)% \(paceRaw > 0 ? "pace" : (paceRaw < 0 ? "under" : "on pace"))")
+                                .font(.system(size: 11))
+                                .foregroundColor(paceColor)
                         }
                     }
                     Spacer()
-                    if !isOverBudget {
-                        Text("\(Formatters.currency(dailyBudget, decimals: false))/day · \(daysRemaining) days left")
-                            .font(.system(size: 12))
-                            .foregroundColor(Theme.Colors.textMuted)
-                    }
                 }
             }
             .padding(20)
@@ -191,7 +194,6 @@ private struct CapsuleProgressBar: View {
     let progress: Double
     let spentLabel: String
     let totalLabel: String
-    let percentLabel: String
     let color: Color
     var isOverBudget: Bool = false
 
@@ -225,10 +227,6 @@ private struct CapsuleProgressBar: View {
                             .padding(.leading, 14)
 
                         Spacer()
-
-                        Text(percentLabel)
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(color)
 
                         Text(totalLabel)
                             .font(.system(size: 11))

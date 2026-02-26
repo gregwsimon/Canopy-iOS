@@ -235,7 +235,7 @@ struct Goal: Codable, Identifiable {
     let currentAmount: Double
     let deadline: String?
     let categoryId: Int?
-    let isSavingsTarget: Bool?
+    let monthlyContribution: Double?
     let isPayoff: Bool?
 }
 

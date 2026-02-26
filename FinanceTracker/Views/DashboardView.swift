@@ -7,7 +7,6 @@ struct DashboardView: View {
     @State private var dashboardData: DashboardData?
     @State private var loading = true
     @State private var incomeNavActive = false
-    @State private var savingsNavActive = false
     @State private var healthcareNavActive = false
     @State private var returnsNavActive = false
     @State private var pendingRefundsNavActive = false
@@ -72,10 +71,11 @@ struct DashboardView: View {
                                     flexibleRemaining: data.summary.flexibleRemaining,
                                     flexibleBudget: data.summary.flexibleBudget,
                                     daysRemaining: data.summary.daysRemaining,
+                                    daysInMonth: data.summary.daysInMonth ?? 30,
                                     dailyBudget: data.summary.dailyBudget,
                                     historicalPace: data.historicalPace,
                                     savingsTarget: savings,
-                                    onGoalTap: { savingsNavActive = true },
+                                    onGoalTap: { onGoalsTap?() },
                                     amortizeSuggestion: (!dismissedAmortizeSuggestion && data.amortization?.largeUnamortizedExpense != nil)
                                         ? AmortizeSuggestion(
                                             amount: data.amortization!.largeUnamortizedExpense!.amount,
@@ -107,7 +107,7 @@ struct DashboardView: View {
                                             case "income": incomeNavActive = true
                                             case "fixed": fixedNavActive = true
                                             case "flexible": flexibleNavActive = true
-                                            case "savings": savingsNavActive = true
+                                            case "savings": onGoalsTap?()
                                             case "spread": spreadNavActive = true
                                             case "healthcare": healthcareNavActive = true
                                             default: break
@@ -161,10 +161,7 @@ struct DashboardView: View {
                     )
                 }
             }
-            .navigationDestination(isPresented: $savingsNavActive) {
-                SavingsGoalSheet(month: month, onSave: { loadData() })
-            }
-            .navigationDestination(isPresented: $fixedNavActive) {
+.navigationDestination(isPresented: $fixedNavActive) {
                 if let data = dashboardData {
                     SpendingDetailView(
                         title: "Fixed Expenses",
@@ -227,7 +224,7 @@ struct DashboardView: View {
             .onChange(of: creditTriageNavActive) { old, new in if old && !new { loadData() } }
             .onChange(of: refundNavActive) { old, new in if old && !new { loadData() } }
             .onChange(of: incomeNavActive) { old, new in if old && !new { loadData() } }
-            .onChange(of: savingsNavActive) { old, new in if old && !new { loadData() } }
+
             .sheet(isPresented: $showAmortizeSuggest) {
                 if let suggestion = dashboardData?.amortization?.largeUnamortizedExpense {
                     AmortizeSheet(

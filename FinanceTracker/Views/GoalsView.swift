@@ -7,6 +7,10 @@ struct GoalsView: View {
     @State private var toastError: String? = nil
     @State private var toastSuccess: String? = nil
 
+    private var totalSaving: Double {
+        goals.reduce(0) { $0 + ($1.monthlyContribution ?? 0) }
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -31,6 +35,30 @@ struct GoalsView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.top, 60)
                         } else {
+                            // Savings summary bar
+                            if totalSaving > 0 {
+                                HStack {
+                                    Image(systemName: "leaf.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Theme.Colors.flowFlex)
+                                    Text("Saving \(Formatters.currency(totalSaving, decimals: false))/mo")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundColor(Theme.Colors.flowFlex)
+                                    Spacer()
+                                    Text("from flex budget")
+                                        .font(.system(size: 11))
+                                        .foregroundColor(Theme.Colors.textMuted)
+                                }
+                                .padding(12)
+                                .background(Theme.Colors.flowFlex.opacity(0.06))
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Theme.Colors.flowFlex.opacity(0.3), lineWidth: 1)
+                                )
+                                .padding(.horizontal)
+                            }
+
                             ForEach(goals) { goal in
                                 GoalDetailCard(goal: goal, onUpdate: loadGoals, onError: { toastError = $0 }, onSuccess: { toastSuccess = $0 })
                             }
@@ -88,6 +116,9 @@ struct GoalDetailCard: View {
     @State private var showingEditSheet = false
     @State private var showingDeleteConfirm = false
     @State private var deleting = false
+    @State private var editingContribution = false
+    @State private var contributionText = ""
+    @State private var savingContribution = false
 
     private var progress: Double {
         guard goal.targetAmount > 0 else { return 0 }
@@ -123,8 +154,8 @@ struct GoalDetailCard: View {
                         Text(goal.name)
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(Theme.Colors.text)
-                        if goal.isSavingsTarget == true {
-                            Text("Saving")
+                        if let mc = goal.monthlyContribution, mc > 0 {
+                            Text("$\(Int(mc))/mo")
                                 .font(.system(size: 9, weight: .semibold))
                                 .foregroundColor(Theme.Colors.flowFlex)
                                 .padding(.horizontal, 5)
@@ -180,24 +211,22 @@ struct GoalDetailCard: View {
                 Spacer()
             }
 
-            HStack(spacing: 8) {
-                Button(action: { showingDeleteConfirm = true }) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 12))
-                        .foregroundColor(Theme.Colors.error)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(Theme.Colors.border, lineWidth: 1)
-                        )
-                }
-                .disabled(deleting)
+            // Contribution row (for fund_target / net_worth goals)
+            if goal.goalType == "fund_target" || goal.goalType == "net_worth" {
+                Divider()
+                contributionRow
             }
         }
         .cardStyle()
         .contentShape(Rectangle())
         .onTapGesture { showingEditSheet = true }
+        .contextMenu {
+            Button(role: .destructive) {
+                showingDeleteConfirm = true
+            } label: {
+                Label("Delete Goal", systemImage: "trash")
+            }
+        }
         .sheet(isPresented: $showingEditSheet) {
             EditGoalSheet(goal: goal, onSave: onUpdate)
         }
@@ -206,6 +235,149 @@ struct GoalDetailCard: View {
             Button("Delete", role: .destructive) { deleteGoal() }
         } message: {
             Text("Are you sure you want to delete \"\(goal.name)\"? This cannot be undone.")
+        }
+    }
+
+    @ViewBuilder
+    private var contributionRow: some View {
+        let mc = goal.monthlyContribution ?? 0
+        HStack(spacing: 8) {
+            if editingContribution {
+                HStack(spacing: 4) {
+                    Text("$")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Theme.Colors.textSecondary)
+                    TextField("0", text: $contributionText)
+                        .font(.system(size: 13, weight: .medium))
+                        .keyboardType(.numberPad)
+                        .foregroundColor(Theme.Colors.text)
+                        .frame(width: 50)
+                    Text("/mo")
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.Colors.textMuted)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 5)
+                .background(Color.white)
+                .cornerRadius(6)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Theme.Colors.flowFlex, lineWidth: 1)
+                )
+
+                if let autoPace = computeAutoPace(), autoPace > 0 {
+                    Button("\(Formatters.currency(autoPace, decimals: false))") {
+                        contributionText = String(format: "%.0f", autoPace)
+                    }
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(Theme.Colors.flowFlex)
+                }
+
+                Spacer()
+
+                Button("Save") {
+                    saveContribution()
+                }
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Theme.Colors.accent)
+                .cornerRadius(6)
+                .disabled(savingContribution)
+
+                Button("Cancel") {
+                    editingContribution = false
+                }
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(Theme.Colors.textSecondary)
+            } else if mc > 0 {
+                Text("\(Formatters.currency(mc, decimals: false))/mo")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Theme.Colors.flowFlex)
+
+                Spacer()
+
+                Button("Edit") {
+                    editingContribution = true
+                    contributionText = String(format: "%.0f", mc)
+                }
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(Theme.Colors.accent)
+
+                Button("Pause") {
+                    contributionText = "0"
+                    saveContribution()
+                }
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(Theme.Colors.error)
+            } else {
+                Text("Not saving")
+                    .font(.system(size: 11))
+                    .foregroundColor(Theme.Colors.textMuted)
+
+                Spacer()
+
+                if let autoPace = computeAutoPace(), autoPace > 0 {
+                    Button("Auto-pace \(Formatters.currency(autoPace, decimals: false))/mo") {
+                        contributionText = String(format: "%.0f", autoPace)
+                        saveContribution()
+                    }
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(Theme.Colors.flowFlex)
+                }
+
+                Button("Set $/mo") {
+                    editingContribution = true
+                    contributionText = autoPaceText()
+                }
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(Theme.Colors.accent)
+            }
+        }
+    }
+
+    func computeAutoPace() -> Double? {
+        guard let deadline = goal.deadline, goal.targetAmount > 0 else { return nil }
+        let remaining = goal.targetAmount - goal.currentAmount
+        guard remaining > 0 else { return nil }
+        let parts = deadline.split(separator: "-")
+        guard parts.count >= 2, let dY = Int(parts[0]), let dM = Int(parts[1]) else { return nil }
+        let now = Date()
+        let cal = Calendar.current
+        let cY = cal.component(.year, from: now)
+        let cM = cal.component(.month, from: now)
+        let months = max((dY - cY) * 12 + (dM - cM), 1)
+        return ceil(remaining / Double(months))
+    }
+
+    func autoPaceText() -> String {
+        if let pace = computeAutoPace(), pace > 0 {
+            return String(format: "%.0f", pace)
+        }
+        return ""
+    }
+
+    func saveContribution() {
+        let amount = Double(contributionText) ?? 0
+        savingContribution = true
+        Task {
+            do {
+                let _: GoalResponse = try await APIClient.shared.request(
+                    "/api/goals",
+                    method: "PATCH",
+                    body: [
+                        "id": goal.id,
+                        "monthlyContribution": amount,
+                    ] as [String: Any]
+                )
+                editingContribution = false
+                onUpdate()
+                onSuccess?(amount > 0 ? "Saving \(Formatters.currency(amount, decimals: false))/mo" : "Savings paused")
+            } catch {
+                onError?("Failed to update contribution")
+            }
+            savingContribution = false
         }
     }
 
@@ -228,7 +400,6 @@ struct GoalDetailCard: View {
 
     var goalTypeLabel: String {
         switch goal.goalType {
-        case "monthly_savings": return "Monthly Savings"
         case "category_limit": return "Category Limit"
         case "fund_target": return "Fund Target"
         case "net_worth": return "Net Worth"
@@ -241,7 +412,7 @@ struct AddGoalSheet: View {
     let onSave: () -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
-    @State private var goalType = "monthly_savings"
+    @State private var goalType = "fund_target"
     @State private var targetAmount = ""
     @State private var currentAmount = ""
     @State private var saving = false
@@ -253,7 +424,6 @@ struct AddGoalSheet: View {
                 Section {
                     TextField("Goal Name", text: $name)
                     Picker("Type", selection: $goalType) {
-                        Text("Monthly Savings").tag("monthly_savings")
                         Text("Fund Target").tag("fund_target")
                         Text("Category Limit").tag("category_limit")
                         Text("Net Worth").tag("net_worth")
@@ -378,7 +548,6 @@ struct EditGoalSheet: View {
                 Section {
                     TextField("Name", text: $name)
                     Picker("Type", selection: $goalType) {
-                        Text("Monthly Savings").tag("monthly_savings")
                         Text("Fund Target").tag("fund_target")
                         Text("Category Limit").tag("category_limit")
                         Text("Net Worth").tag("net_worth")

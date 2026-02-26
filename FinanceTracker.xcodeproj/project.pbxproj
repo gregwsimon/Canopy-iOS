@@ -55,6 +55,7 @@
 		O1000021000000000000001 /* RecapTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = O2000021000000000000001 /* RecapTabView.swift */; };
 		P1000022000000000000001 /* PendingRefundsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = P2000022000000000000001 /* PendingRefundsView.swift */; };
 		Q1000023000000000000001 /* ResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = Q2000023000000000000001 /* ResponseCache.swift */; };
+		R1000024000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = R2000024000000000000001 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -108,6 +109,7 @@
 		O2000021000000000000001 /* RecapTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecapTabView.swift; sourceTree = "<group>"; };
 		P2000022000000000000001 /* PendingRefundsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingRefundsView.swift; sourceTree = "<group>"; };
 		Q2000023000000000000001 /* ResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseCache.swift; sourceTree = "<group>"; };
+		R2000024000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				9EDF1BC02F3641D9003E2E7D /* Info.plist */,
+				R2000024000000000000001 /* Assets.xcassets */,
 				B3000001000000000000001 /* ComponentsNew */,
 				A2000001000000000000001 /* FinanceTrackerApp.swift */,
 				K200001D000000000000001 /* Theme.swift */,
@@ -283,6 +286,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				R1000024000000000000001 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

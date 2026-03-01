@@ -4,6 +4,7 @@ struct IncomeBreakdownSheet: View {
     let grossIncome: Double
     let netIncome: Double
     let incomeBreakdown: IncomeBreakdown?
+    var incomeIsProjected: Bool = false
 
     private var totalDeductions: Double {
         grossIncome - netIncome
@@ -14,9 +15,16 @@ struct IncomeBreakdownSheet: View {
             VStack(alignment: .leading, spacing: 16) {
                 // Gross Income header
                 HStack {
-                    Text("Gross Income")
-                        .font(.system(size: 14))
-                        .foregroundColor(Theme.Colors.textSecondary)
+                    HStack(spacing: 6) {
+                        Text("Gross Income")
+                            .font(.system(size: 14))
+                            .foregroundColor(Theme.Colors.textSecondary)
+                        if incomeIsProjected {
+                            Text("proj")
+                                .font(.system(size: 10).italic())
+                                .foregroundColor(Theme.Colors.textMuted)
+                        }
+                    }
                     Spacer()
                     Text(Formatters.currency(grossIncome, decimals: false))
                         .font(.system(size: 15, weight: .semibold, design: .monospaced))
@@ -49,9 +57,16 @@ struct IncomeBreakdownSheet: View {
 
                 // Net Income footer
                 HStack {
-                    Text("Net Income")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Theme.Colors.text)
+                    HStack(spacing: 6) {
+                        Text("Net Income")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Theme.Colors.text)
+                        if incomeIsProjected {
+                            Text("proj")
+                                .font(.system(size: 10).italic())
+                                .foregroundColor(Theme.Colors.textMuted)
+                        }
+                    }
                     Spacer()
                     Text(Formatters.currency(netIncome, decimals: false))
                         .font(.system(size: 16, weight: .bold, design: .monospaced))

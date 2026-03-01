@@ -1,4 +1,5 @@
 import Foundation
+import LocalAuthentication
 
 struct SessionCheck: Decodable {
     let user: SessionUser?
@@ -55,7 +56,14 @@ class AuthManager: ObservableObject {
             let session: SessionCheck = try await APIClient.shared.request("/api/auth/session")
             if session.user != nil {
                 print("Session valid: \(session.user?.name ?? "unknown")")
-                isAuthenticated = true
+                let biometricSuccess = await authenticateWithBiometrics()
+                if biometricSuccess {
+                    isAuthenticated = true
+                } else {
+                    // Face ID failed/cancelled — show login screen
+                    // Don't clear Keychain — session is still valid
+                    isAuthenticated = false
+                }
             } else {
                 print("Session invalid — no user, showing login")
                 logout()
@@ -63,6 +71,27 @@ class AuthManager: ObservableObject {
         } catch {
             print("Session validation failed: \(error), showing login")
             logout()
+        }
+    }
+
+    private func authenticateWithBiometrics() async -> Bool {
+        let context = LAContext()
+        var nsError: NSError?
+
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &nsError) else {
+            print("Biometrics unavailable: \(nsError?.localizedDescription ?? "unknown")")
+            // No biometrics available (simulator, no Face ID) — allow through
+            return true
+        }
+
+        do {
+            return try await context.evaluatePolicy(
+                .deviceOwnerAuthenticationWithBiometrics,
+                localizedReason: "Unlock Canopy"
+            )
+        } catch {
+            print("Biometric auth failed: \(error.localizedDescription)")
+            return false
         }
     }
 }

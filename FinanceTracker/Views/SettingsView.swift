@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var authManager: AuthManager
+    @EnvironmentObject var plaidLinkManager: PlaidLinkManager
     @State private var accounts: [Account] = []
     @State private var plaidItems: [PlaidItem] = []
     @State private var disconnecting: String?
@@ -26,7 +27,7 @@ struct SettingsView: View {
             List {
                 Section {
                     if activeItems.isEmpty {
-                        Text("No banks connected")
+                        Text("No accounts connected")
                             .font(Theme.Fonts.caption)
                             .foregroundColor(Theme.Colors.textMuted)
                     } else {
@@ -36,23 +37,54 @@ struct SettingsView: View {
                                     Text(item.institution_name)
                                         .font(Theme.Fonts.body)
                                         .foregroundColor(Theme.Colors.text)
-                                    Text(item.status == "needs_reauth"
-                                         ? "Needs re-authentication"
-                                         : item.last_synced != nil ? "Synced" : "Not yet synced")
-                                        .font(Theme.Fonts.small)
-                                        .foregroundColor(item.status == "needs_reauth" ? Theme.Colors.warning : Theme.Colors.textMuted)
+                                    if item.status == "needs_reauth" {
+                                        Text("Tap to re-authenticate")
+                                            .font(Theme.Fonts.small)
+                                            .foregroundColor(Theme.Colors.warning)
+                                    } else {
+                                        Text(item.last_synced != nil ? "Synced" : "Not yet synced")
+                                            .font(Theme.Fonts.small)
+                                            .foregroundColor(Theme.Colors.textMuted)
+                                    }
                                 }
                                 Spacer()
-                                Button(disconnecting == item.item_id ? "..." : "Disconnect") {
-                                    disconnect(item.item_id)
+                                if item.status == "needs_reauth" {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundColor(Theme.Colors.warning)
+                                        .font(.system(size: 14))
+                                } else {
+                                    Button(disconnecting == item.item_id ? "..." : "Disconnect") {
+                                        disconnect(item.item_id)
+                                    }
+                                    .font(Theme.Fonts.small)
+                                    .foregroundColor(Theme.Colors.error)
                                 }
-                                .font(Theme.Fonts.small)
-                                .foregroundColor(Theme.Colors.error)
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                if item.status == "needs_reauth" {
+                                    plaidLinkManager.onSuccess = { loadData() }
+                                    plaidLinkManager.openUpdateLink(itemId: item.item_id)
+                                }
                             }
                         }
                     }
+
+                    Button {
+                        plaidLinkManager.onSuccess = { loadData() }
+                        plaidLinkManager.openLink()
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 16))
+                            Text(plaidLinkManager.isLoading ? "Connecting..." : "Connect Account")
+                                .font(Theme.Fonts.body)
+                        }
+                        .foregroundColor(Theme.Colors.text)
+                    }
+                    .disabled(plaidLinkManager.isLoading)
                 } header: {
-                    Text("Connected Banks")
+                    Text("Connected Accounts")
                         .sectionHeaderStyle()
                 }
 
@@ -100,6 +132,12 @@ struct SettingsView: View {
         .toastError($toastError)
         .toastSuccess($toastSuccess)
         .onAppear { if accounts.isEmpty { loadData() } }
+        .onChange(of: plaidLinkManager.error) { _, newError in
+            if let err = newError {
+                toastError = err
+                plaidLinkManager.error = nil
+            }
+        }
     }
 
     func loadData() {
@@ -137,9 +175,9 @@ struct SettingsView: View {
                     body: ["item_id": itemId]
                 )
                 loadData()
-                toastSuccess = "Bank disconnected"
+                toastSuccess = "Account disconnected"
             } catch {
-                toastError = "Failed to disconnect bank"
+                toastError = "Failed to disconnect account"
             }
             disconnecting = nil
         }
@@ -190,7 +228,7 @@ struct ChangePasswordView: View {
                 }
                 .disabled(loading || currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty)
                 .foregroundColor(.white)
-                .listRowBackground(Theme.Colors.teal)
+                .listRowBackground(Theme.Colors.text)
             }
         }
         .scrollContentBackground(.hidden)

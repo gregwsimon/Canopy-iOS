@@ -65,7 +65,7 @@ struct LoginView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 40)
-                        .background(Theme.Colors.teal)
+                        .background(Theme.Colors.text)
                         .cornerRadius(8)
                 }
                 .disabled(authManager.isLoading || username.isEmpty || password.isEmpty)

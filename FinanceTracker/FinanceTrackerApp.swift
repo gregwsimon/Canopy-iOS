@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct FinanceTrackerApp: App {
     @StateObject private var authManager = AuthManager()
+    @StateObject private var plaidLinkManager = PlaidLinkManager()
 
     init() {
         // Navigation bar
@@ -35,23 +36,26 @@ struct FinanceTrackerApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if authManager.isChecking {
-                // Branded splash while validating cached session
-                VStack {
-                    Spacer()
-                    CanopyMarkView(size: 64, variant: .color)
-                    Spacer()
+            Group {
+                if authManager.isChecking {
+                    // Branded splash while validating cached session
+                    VStack {
+                        Spacer()
+                        CanopyMarkView(size: 64, variant: .color)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.white)
+                    .ignoresSafeArea()
+                } else if authManager.isAuthenticated {
+                    MainTabView()
+                        .environmentObject(authManager)
+                } else {
+                    LoginView()
+                        .environmentObject(authManager)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white)
-                .ignoresSafeArea()
-            } else if authManager.isAuthenticated {
-                MainTabView()
-                    .environmentObject(authManager)
-            } else {
-                LoginView()
-                    .environmentObject(authManager)
             }
+            .environmentObject(plaidLinkManager)
         }
     }
 }

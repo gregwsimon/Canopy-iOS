@@ -107,6 +107,12 @@ struct DashboardData: Codable {
     let windfall: WindfallMetrics?
     let amortization: AmortizationMetrics?
     let historicalPace: Double?
+    let plaidStatus: PlaidStatus?
+}
+
+struct PlaidStatus: Codable {
+    let needsAttention: Bool
+    let institutions: [String]
 }
 
 struct AmortizationMetrics: Codable {
@@ -151,6 +157,7 @@ struct DashboardSummary: Codable {
     let daysRemaining: Int
     let daysInMonth: Int?
     let dailyBudget: Double
+    let incomeIsProjected: Bool?
 }
 
 struct HealthcareMetrics: Codable {
@@ -476,4 +483,53 @@ struct CreditDetailItem: Codable, Identifiable {
     let creditAllocation: String?
     let categoryName: String?
     let goalName: String?
+}
+
+// MARK: - Carry Intention
+
+struct CarryResponse: Codable {
+    let carry: CarryData?
+    let options: CarryOptions
+}
+
+struct CarryData: Codable {
+    let recapId: Int
+    let sourceMonth: String
+    let surplusDeficit: Double
+    let isSurplus: Bool
+    let allocations: [CarryAllocation]
+    let allocationStatus: String
+    let totalAllocated: Double
+    let remaining: Double
+    let flexBudgetImpact: Double
+    let boostAmount: Double
+    let reduceAmount: Double
+}
+
+struct CarryAllocation: Codable, Identifiable {
+    let id: Int
+    let type: String
+    let amount: Double
+    let targetGoalId: Int?
+    let targetGoalName: String?
+    let targetTransactionId: Int?
+    let targetSpreadDescription: String?
+    let createdTransactionId: Int?
+    let amortizeMonths: Int?
+}
+
+struct CarryOptions: Codable {
+    let goals: [AllocationGoalOption]
+    let spreads: [AllocationSpreadOption]
+}
+
+// MARK: - Plaid Link
+
+struct LinkTokenResponse: Codable {
+    let link_token: String
+}
+
+struct ExchangeTokenResponse: Codable {
+    let item_id: String
+    let institution_name: String
 }

@@ -5,6 +5,11 @@ struct AmortizeSuggestion {
     let description: String
 }
 
+struct CarryInfo {
+    let flexBudgetImpact: Double
+    let hasUnallocated: Bool
+}
+
 struct PulseCardView: View {
     let flexibleRemaining: Double
     let flexibleBudget: Double
@@ -13,7 +18,9 @@ struct PulseCardView: View {
     let dailyBudget: Double
     var historicalPace: Double? = nil
     var savingsTarget: Double = 0
+    var carry: CarryInfo? = nil
     var onGoalTap: (() -> Void)? = nil
+    var onCarryClick: (() -> Void)? = nil
     var amortizeSuggestion: AmortizeSuggestion? = nil
     var onAmortizeTap: (() -> Void)? = nil
     var onAmortizeDismiss: (() -> Void)? = nil
@@ -69,10 +76,43 @@ struct PulseCardView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 // Header
-                Text("Flexible remaining")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Theme.Colors.textMuted)
-                    .padding(.bottom, 8)
+                HStack(spacing: 4) {
+                    Text("Flexible remaining")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Theme.Colors.textMuted)
+
+                    if let c = carry, c.flexBudgetImpact != 0 {
+                        Text("(\(c.flexBudgetImpact > 0 ? "+" : "−")\(Formatters.currency(abs(c.flexBudgetImpact), decimals: false)) carry)")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(c.flexBudgetImpact > 0 ? Theme.Colors.success : Theme.Colors.error)
+                    }
+
+                    Spacer()
+
+                    if let c = carry, c.flexBudgetImpact != 0 || c.hasUnallocated {
+                        Button { onCarryClick?() } label: {
+                            ZStack(alignment: .topTrailing) {
+                                Circle()
+                                    .stroke(Color(hex: "#dddddd"), lineWidth: 1)
+                                    .frame(width: 18, height: 18)
+                                    .overlay(
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 8, weight: .medium))
+                                            .foregroundColor(Color(hex: "#bbbbbb"))
+                                    )
+                                if c.hasUnallocated {
+                                    Circle()
+                                        .fill(Theme.Colors.warning)
+                                        .frame(width: 6, height: 6)
+                                        .overlay(Circle().stroke(Color.white, lineWidth: 1))
+                                        .offset(x: 1, y: -1)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.bottom, 8)
 
                 // Hero number
                 Text(isOverBudget
@@ -108,24 +148,29 @@ struct PulseCardView: View {
                         Text("\(daysRemaining) \(daysRemaining == 1 ? "day" : "days") left")
                             .font(.system(size: 11))
                             .foregroundColor(Theme.Colors.textSecondary)
-                        Text(" · ")
-                            .font(.system(size: 11))
-                            .foregroundColor(Color(hex: "#cccccc"))
-
-                        let daysElapsed = max(daysInMonth - daysRemaining, 1)
-                        let expectedPct = Double(daysElapsed) / Double(daysInMonth)
-                        let actualPct = flexibleBudget > 0 ? spent / flexibleBudget : 0
-                        let paceRaw = expectedPct > 0 ? Int(round(((actualPct / expectedPct) - 1) * 100)) : 0
-                        let paceAbs = abs(paceRaw)
-                        let paceColor = paceRaw > 5 ? thresholdColor : (paceRaw < -5 ? Theme.Colors.success : Theme.Colors.textMuted)
-
-                        HStack(spacing: 2) {
-                            Image(systemName: paceRaw > 0 ? "arrow.up.right" : (paceRaw < 0 ? "arrow.down.right" : "arrow.right"))
-                                .font(.system(size: 9, weight: .semibold))
-                                .foregroundColor(paceColor)
-                            Text("\(paceAbs)% \(paceRaw > 0 ? "pace" : (paceRaw < 0 ? "under" : "on pace"))")
+                        // Only show pace when there's actual spending and enough days for meaningful data
+                        let spent_ = flexibleBudget - flexibleRemaining
+                        let daysElapsed_ = max(daysInMonth - daysRemaining, 1)
+                        if spent_ > 0 && daysElapsed_ >= 4 {
+                            Text(" · ")
                                 .font(.system(size: 11))
-                                .foregroundColor(paceColor)
+                                .foregroundColor(Color(hex: "#cccccc"))
+
+                            let daysElapsed = daysElapsed_
+                            let expectedPct = Double(daysElapsed) / Double(daysInMonth)
+                            let actualPct = flexibleBudget > 0 ? spent_ / flexibleBudget : 0
+                            let paceRaw = expectedPct > 0 ? Int(round(((actualPct / expectedPct) - 1) * 100)) : 0
+                            let paceAbs = abs(paceRaw)
+                            let paceColor = paceRaw > 5 ? thresholdColor : (paceRaw < -5 ? Theme.Colors.success : Theme.Colors.textMuted)
+
+                            HStack(spacing: 2) {
+                                Image(systemName: paceRaw > 0 ? "arrow.up.right" : (paceRaw < 0 ? "arrow.down.right" : "arrow.right"))
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundColor(paceColor)
+                                Text("\(paceAbs)% \(paceRaw > 0 ? "pace" : (paceRaw < 0 ? "under" : "on pace"))")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(paceColor)
+                            }
                         }
                     }
                     Spacer()

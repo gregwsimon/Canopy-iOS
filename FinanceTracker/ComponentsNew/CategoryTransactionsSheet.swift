@@ -76,9 +76,9 @@ struct CategoryTransactionsSheet: View {
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(Color(hex: isGreyed ? "#999" : "#171717"))
                                 HStack(spacing: 4) {
-                                    Text(Formatters.shortDate(txn.date))
-                                        .font(.system(size: 11))
-                                        .foregroundColor(Theme.Colors.textMuted)
+                                    Text(txn.category_name ?? "")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Theme.Colors.textSecondary)
                                     if txn.is_fixed == true {
                                         StatusBadge(text: "Fixed", textColor: Theme.Colors.textSecondary, bgColor: Color(hex: "#e5e5e5"))
                                     }
@@ -93,6 +93,9 @@ struct CategoryTransactionsSheet: View {
                                             StatusBadge.forHealthcare(rs)
                                         }
                                     }
+                                    if txn.is_amortized == true, let months = txn.amortize_months {
+                                        StatusBadge(text: "\(months)mo", textColor: Theme.Colors.accent, bgColor: Theme.Colors.accentBg)
+                                    }
                                     if isUnallocatedCredit {
                                         StatusBadge(text: "Credit", textColor: Theme.Colors.success, bgColor: Color(hex: "#dcfce7"))
                                     }
@@ -101,45 +104,68 @@ struct CategoryTransactionsSheet: View {
 
                             Spacer()
 
-                            Text(Formatters.currency(abs(txn.amount)))
-                                .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                                .foregroundColor(isGreyed ? Color(hex: "#bbb") : (txn.amount >= 0 ? Theme.Colors.success : Theme.Colors.error))
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(Formatters.currency(txn.amount))
+                                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                                    .foregroundColor(isGreyed ? Color(hex: "#bbb") : (txn.amount >= 0 ? Theme.Colors.success : Theme.Colors.error))
+                                Text(Formatters.shortDate(txn.date))
+                                    .font(.system(size: 11))
+                                    .foregroundColor(Theme.Colors.textMuted)
+                            }
 
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 10))
                                 .foregroundColor(Theme.Colors.textDisabled)
                         }
                     }
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 12)
+                    .background(Color.white)
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Theme.Colors.border, lineWidth: 1)
+                    )
+                    .swipeActions(edge: .trailing) {
+                        Button("Delete", role: .destructive) {
+                            deleteTransaction(txn.id)
+                        }
+                    }
                     .swipeActions(edge: .leading, allowsFullSwipe: false) {
                         Button { recategorizeTxn = txn } label: {
                             Image(systemName: "folder")
                         }
-                        .tint(Theme.Colors.accent)
+                        .tint(.blue)
 
-                        Button { toggleFixed(txn) } label: {
-                            Image(systemName: txn.is_fixed == true ? "pin.slash" : "pin")
-                        }
-                        .tint(Theme.Colors.textSecondary)
-
-                        if txn.amount > 0 && txn.credit_allocation != "unallocated" {
-                            Button { markAsCredit(txn) } label: {
-                                Image(systemName: "dollarsign.arrow.circlepath")
+                        if txn.category_type == "expense" {
+                            Button { toggleFixed(txn) } label: {
+                                Image(systemName: txn.is_fixed == true ? "pin.slash" : "pin")
                             }
-                            .tint(Theme.Colors.success)
+                            .tint(Theme.Colors.flowFixed)
+
+                            if txn.is_return == true {
+                                Button { undoReturn(txn) } label: {
+                                    Image(systemName: "arrow.uturn.right")
+                                }
+                                .tint(Theme.Colors.flowCredits)
+                            } else {
+                                Button { toggleReturn(txn) } label: {
+                                    Image(systemName: "arrow.uturn.left")
+                                }
+                                .tint(Theme.Colors.flowCredits)
+                            }
                         }
 
-                        if txn.is_return == true {
-                            Button { undoReturn(txn) } label: {
-                                Image(systemName: "arrow.uturn.right")
+                        if txn.amount > 0 && (txn.credit_allocation == nil || txn.credit_allocation == "none") {
+                            Button { markAsCredit(txn) } label: {
+                                Image(systemName: "dollarsign.circle")
                             }
                             .tint(Theme.Colors.flowCredits)
-                        } else {
-                            Button { toggleReturn(txn) } label: {
-                                Image(systemName: "arrow.uturn.left")
-                            }
-                            .tint(Theme.Colors.flowPayoff)
                         }
                     }
+                    .listRowBackground(Theme.Colors.background)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 3, leading: 16, bottom: 3, trailing: 16))
                 }
 
                 if !displayedTransactions.isEmpty {
@@ -155,9 +181,21 @@ struct CategoryTransactionsSheet: View {
                             .font(.system(size: 14, weight: .bold, design: .monospaced))
                             .foregroundColor(total >= 0 ? Theme.Colors.success : Theme.Colors.error)
                     }
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 12)
+                    .background(Color.white)
+                    .cornerRadius(10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Theme.Colors.border, lineWidth: 1)
+                    )
+                    .listRowBackground(Theme.Colors.background)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 3, leading: 16, bottom: 3, trailing: 16))
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .overlay {
                 if loading {
                     ProgressView()
@@ -273,6 +311,17 @@ struct CategoryTransactionsSheet: View {
                 loadTransactions()
             } catch {
                 print("Mark as credit error:", error)
+            }
+        }
+    }
+
+    private func deleteTransaction(_ id: Int) {
+        Task {
+            do {
+                let _: OkResult = try await APIClient.shared.request("/api/transactions?id=\(id)", method: "DELETE")
+                loadTransactions()
+            } catch {
+                print("Delete error:", error)
             }
         }
     }

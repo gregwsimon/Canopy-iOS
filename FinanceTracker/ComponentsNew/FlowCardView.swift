@@ -14,6 +14,7 @@ struct FlowCardView: View {
     var pendingReturns: Double = 0
     var expectedFixed: Double? = nil
     var actualFixed: Double? = nil
+    var incomeIsProjected: Bool = false
     var onNodeTap: ((String) -> Void)? = nil
     var onCreditBadgeTap: (() -> Void)? = nil
     var onRefundTap: (() -> Void)? = nil
@@ -22,6 +23,19 @@ struct FlowCardView: View {
 
     private var unspent: Double {
         max(netIncome - fixedTotal - savingsTarget - spreadTotal - healthcareTotal - flexibleTotal, 0)
+    }
+
+    /// Tint the fixed amount green (under) or red (over) after day 15
+    private var fixedAmountColor: Color {
+        let day = Calendar.current.component(.day, from: Date())
+        guard day >= 15,
+              let actual = actualFixed, let expected = expectedFixed, expected > 0 else {
+            return Theme.Colors.textSecondary
+        }
+        let delta = actual - expected
+        if delta < -10 { return Theme.Colors.success }
+        if delta > 10 { return Theme.Colors.error }
+        return Theme.Colors.textSecondary
     }
 
     var body: some View {
@@ -66,9 +80,9 @@ struct FlowCardView: View {
             let savFrac = savingsTarget > 0 ? min(savingsTarget / netIncome, 1.0) : 0
             let spreadFrac = spreadTotal > 0 ? min(spreadTotal / netIncome, max(1.0 - savFrac, 0)) : 0
             let fixedFrac = min(fixedTotal / netIncome, max(1.0 - savFrac - spreadFrac, 0))
-            let flexFrac = min(flexibleTotal / netIncome, max(1.0 - savFrac - spreadFrac - fixedFrac, 0))
-            let hcFracForUnspent = healthcareTotal > 0 ? min(healthcareTotal / netIncome, max(1.0 - savFrac - spreadFrac - fixedFrac - flexFrac, 0)) : 0
-            let unspentFrac = max(1.0 - savFrac - spreadFrac - fixedFrac - flexFrac - hcFracForUnspent, 0)
+            // Flexible absorbs all remaining (unspent label removed — redundant with PulseCard)
+            let flexFrac = max(1.0 - savFrac - spreadFrac - fixedFrac, 0)
+            let unspentFrac: CGFloat = 0
 
             // Right bar heights (scaled to fit within rightSpanH)
             let bars = Self.scaledBarLayout(
@@ -104,7 +118,6 @@ struct FlowCardView: View {
             let srcFixedTop = greenTop + greenH * savFrac
             let srcSpreadTop = greenTop + greenH * (savFrac + fixedFrac)
             let srcFlexTop = greenTop + greenH * (savFrac + fixedFrac + spreadFrac)
-            let srcUnspentTop = greenTop + greenH * (savFrac + fixedFrac + spreadFrac + flexFrac)
 
             // Right label positioning with collision avoidance
             let rightLabelX = rightBarX + barW + 8 + (w - rightBarX - barW - 8) / 2
@@ -114,8 +127,8 @@ struct FlowCardView: View {
                 fixed: greyTop + greyH / 2,
                 savings: tealH > 0 ? tealTop + tealH / 2 : -1,
                 spread: spreadH > 0 ? spreadTop + spreadH / 2 : -1,
-                flexible: blueTop + blueH / 2,
-                unspent: unspentH > 0 ? unspentTop + unspentH / 2 : -1,
+                flexible: blueTop + (blueH + (unspentH > 0 ? unspentH : 0)) / 2,
+                unspent: unspentH > 0 ? unspentTop + unspentH - 10 : -1,
                 maxY: h - 14
             )
 
@@ -175,11 +188,10 @@ struct FlowCardView: View {
 
                 drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFixedTop, fromH: greenH * fixedFrac, toX: rightBarX, toTopY: greyTop, toH: greyH, color: Theme.Colors.flowFixed.opacity(0.12))
 
-                drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFlexTop, fromH: greenH * flexFrac, toX: rightBarX, toTopY: blueTop, toH: blueH, color: Theme.Colors.flowFlex.opacity(0.10))
-
-                if unspentH > 0 {
-                    drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcUnspentTop, fromH: greenH * unspentFrac, toX: rightBarX, toTopY: unspentTop, toH: unspentH, color: Theme.Colors.textDisabled.opacity(0.08))
-                }
+                // Merged flex + unspent flow band
+                let mergedFlexFromH = greenH * (flexFrac + unspentFrac)
+                let mergedFlexToH = blueH + unspentH
+                drawFlowBand(ctx: ctx, fromX: leftBarX + barW, fromTopY: srcFlexTop, fromH: mergedFlexFromH, toX: rightBarX, toTopY: blueTop, toH: mergedFlexToH, color: Theme.Colors.flowFlex.opacity(0.10))
             }
             .frame(width: w, height: h)
             .allowsHitTesting(false)
@@ -192,6 +204,11 @@ struct FlowCardView: View {
                 Text(Formatters.currency(netIncome, decimals: false))
                     .font(.system(size: 10))
                     .foregroundColor(Theme.Colors.textSecondary)
+                if incomeIsProjected {
+                    Text("proj")
+                        .font(.system(size: 9).italic())
+                        .foregroundColor(Theme.Colors.textMuted)
+                }
             }
             .frame(width: leftBarX - 8, alignment: .trailing)
             .contentShape(Rectangle())
@@ -203,23 +220,9 @@ struct FlowCardView: View {
                 Text("Fixed")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Theme.Colors.text)
-                HStack(spacing: 4) {
-                    Text(Formatters.currency(fixedTotal, decimals: false))
-                        .font(.system(size: 10))
-                        .foregroundColor(Theme.Colors.textSecondary)
-                    if let actual = actualFixed, let expected = expectedFixed, expected > 0 {
-                        let delta = actual - expected
-                        if delta > 10 {
-                            Text("↑ \(Formatters.currency(delta, decimals: false))")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(Theme.Colors.error)
-                        } else if delta < -10 {
-                            Text("↓ \(Formatters.currency(delta, decimals: false))")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(Theme.Colors.success)
-                        }
-                    }
-                }
+                Text(Formatters.currency(fixedTotal, decimals: false))
+                    .font(.system(size: 10))
+                    .foregroundColor(fixedAmountColor)
             }
             .frame(width: rightLabelW, alignment: .leading)
             .contentShape(Rectangle())
@@ -271,19 +274,7 @@ struct FlowCardView: View {
             .onTapGesture { onNodeTap?("flexible") }
             .position(x: rightLabelX, y: adjusted.flexibleY)
 
-            // Unspent label
-            if unspentH > 0 {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Unspent")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Theme.Colors.textDisabled)
-                    Text(Formatters.currency(unspent, decimals: false))
-                        .font(.system(size: 10))
-                        .foregroundColor(Theme.Colors.textDisabled)
-                }
-                .frame(width: rightLabelW, alignment: .leading)
-                .position(x: rightLabelX, y: adjusted.unspentY)
-            }
+            // (Unspent label removed — flexible remaining shown in PulseCard)
 
             // Credit segment tappable label (left side, next to amber bar)
             Button(action: { onCreditBadgeTap?() }) {
@@ -333,7 +324,8 @@ struct FlowCardView: View {
         var blueH = max(minBarH, greenH * flexFrac)
         var unspentH: CGFloat = unspentFrac > 0.02 ? max(minBarH, greenH * unspentFrac) : 0
 
-        let activeBarCount = [true, tealH > 0, spreadH > 0, true, unspentH > 0].filter { $0 }.count
+        // blue + unspent are merged (no gap between them), so count as one bar
+        let activeBarCount = [true, tealH > 0, spreadH > 0, true].filter { $0 }.count
         let totalGapSpace = CGFloat(activeBarCount - 1) * barGap
         let totalBarH = greyH + tealH + spreadH + blueH + unspentH
         if totalBarH + totalGapSpace > greenH {
@@ -350,7 +342,7 @@ struct FlowCardView: View {
         let greyTop = tealTop + (tealH > 0 ? tealH + barGap : 0)
         let spreadTop = greyTop + greyH + barGap
         let blueTop = spreadTop + (spreadH > 0 ? spreadH + barGap : 0)
-        let unspentTop = blueTop + blueH + (unspentH > 0 ? barGap : 0)
+        let unspentTop = blueTop + blueH // flush with flexible (merged bar)
 
         return BarLayout(
             greyH: greyH, tealH: tealH, spreadH: spreadH, blueH: blueH, unspentH: unspentH,

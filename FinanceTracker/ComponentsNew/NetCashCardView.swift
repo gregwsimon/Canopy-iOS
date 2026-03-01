@@ -71,7 +71,7 @@ struct NetCashCardView: View {
                     if totalPending > 0 {
                         Button { onPendingRefundsTap?() } label: {
                             HStack(spacing: 4) {
-                                Text("Pending refunds")
+                                Text("Refunds")
                                     .font(.system(size: 11, weight: .medium))
                                     .foregroundColor(Theme.Colors.textSecondary)
                                     .lineLimit(1)
@@ -94,7 +94,7 @@ struct NetCashCardView: View {
                     if goalEarmarked > 0 {
                         Button { onGoalsTap?() } label: {
                             HStack(spacing: 4) {
-                                Text("Earmarked savings")
+                                Text("Earmarked Savings")
                                     .font(.system(size: 11, weight: .medium))
                                     .foregroundColor(Theme.Colors.textSecondary)
                                     .lineLimit(1)

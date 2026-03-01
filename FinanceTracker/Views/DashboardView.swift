@@ -17,6 +17,8 @@ struct DashboardView: View {
     @State private var spreadNavActive = false
     @State private var showAmortizeSuggest = false
     @State private var dismissedAmortizeSuggestion = false
+    @State private var carryData: CarryResponse? = nil
+    @State private var showCarryModal = false
 
     var body: some View {
         NavigationStack {
@@ -68,6 +70,28 @@ struct DashboardView: View {
                             if let data = dashboardData {
                                 let savings = data.savingsTarget ?? 0
 
+                                // Plaid connection warning
+                                if let plaid = data.plaidStatus, plaid.needsAttention {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "exclamationmark.triangle.fill")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(Color(hex: "#b45309"))
+                                        Text("\(plaid.institutions.joined(separator: ", ")) disconnected")
+                                            .font(.system(size: 12, weight: .medium))
+                                            .foregroundColor(Color(hex: "#b45309"))
+                                        Spacer()
+                                        Text("Settings →")
+                                            .font(.system(size: 11, weight: .medium))
+                                            .foregroundColor(Color(hex: "#b45309"))
+                                    }
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 10)
+                                    .background(Color(hex: "#fef3e2"))
+                                    .cornerRadius(10)
+                                    .padding(.horizontal)
+                                    .padding(.bottom, 8)
+                                }
+
                                 // Hero Zone
                                 PulseCardView(
                                     flexibleRemaining: data.summary.flexibleRemaining,
@@ -77,7 +101,12 @@ struct DashboardView: View {
                                     dailyBudget: data.summary.dailyBudget,
                                     historicalPace: data.historicalPace,
                                     savingsTarget: savings,
+                                    carry: carryData?.carry.map { CarryInfo(
+                                        flexBudgetImpact: $0.flexBudgetImpact,
+                                        hasUnallocated: $0.remaining > 0.01
+                                    ) },
                                     onGoalTap: { onGoalsTap?() },
+                                    onCarryClick: { showCarryModal = true },
                                     amortizeSuggestion: (!dismissedAmortizeSuggestion && data.amortization?.largeUnamortizedExpense != nil)
                                         ? AmortizeSuggestion(
                                             amount: data.amortization!.largeUnamortizedExpense!.amount,
@@ -104,6 +133,7 @@ struct DashboardView: View {
                                         pendingReturns: data.netCash?.pendingReturns ?? 0,
                                         expectedFixed: data.summary.expectedFixed,
                                         actualFixed: data.summary.fixedExpenses,
+                                        incomeIsProjected: data.summary.incomeIsProjected ?? false,
                                         onNodeTap: { nodeId in
                                             switch nodeId {
                                             case "income": incomeNavActive = true
@@ -160,7 +190,8 @@ struct DashboardView: View {
                     IncomeBreakdownSheet(
                         grossIncome: data.summary.grossIncome,
                         netIncome: data.summary.netIncome,
-                        incomeBreakdown: data.incomeBreakdown
+                        incomeBreakdown: data.incomeBreakdown,
+                        incomeIsProjected: data.summary.incomeIsProjected ?? false
                     )
                 }
             }
@@ -242,6 +273,15 @@ struct DashboardView: View {
                     )
                 }
             }
+            .sheet(isPresented: $showCarryModal) {
+                if let carry = carryData?.carry {
+                    CarryIntentionSheet(
+                        carry: carry,
+                        options: carryData?.options ?? CarryOptions(goals: [], spreads: []),
+                        onChanged: { loadData(); loadCarry() }
+                    )
+                }
+            }
         }
         .onAppear { syncThenLoad() }
     }
@@ -276,6 +316,18 @@ struct DashboardView: View {
                 print("Dashboard load error:", error)
             }
             loading = false
+        }
+        if !isYTD { loadCarry() }
+    }
+
+    func loadCarry() {
+        Task {
+            do {
+                let fresh: CarryResponse = try await APIClient.shared.request("/api/carry?month=\(month)")
+                carryData = fresh
+            } catch {
+                carryData = nil
+            }
         }
     }
 

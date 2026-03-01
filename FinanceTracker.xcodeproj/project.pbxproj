@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9EDF1BB22F342CCB003E2E7D /* GoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EDF1BB12F342CCB003E2E7D /* GoalsView.swift */; };
+		9EDF1BC32F5481D4003E2E7D /* LinkKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9EDF1BC22F5481D4003E2E7D /* LinkKit */; };
 		A1000001000000000000001 /* FinanceTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001 /* FinanceTrackerApp.swift */; };
 		A1000002000000000000001 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002000000000000001 /* Models.swift */; };
 		A1000003000000000000001 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003000000000000001 /* APIClient.swift */; };
@@ -38,6 +39,7 @@
 		C1000010000000000000001 /* SavingsGoalSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000010000000000000001 /* SavingsGoalSheet.swift */; };
 		C1000011000000000000001 /* TransactionEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000011000000000000001 /* TransactionEditSheet.swift */; };
 		C1000012000000000000001 /* GroupedCategoryPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000012000000000000001 /* GroupedCategoryPicker.swift */; };
+		C10000CC000000000000001 /* CarryIntentionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000CC000000000000001 /* CarryIntentionSheet.swift */; };
 		D1000013000000000000001 /* SpendingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2000013000000000000001 /* SpendingDetailView.swift */; };
 		E1000014000000000000001 /* CreditTriageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000014000000000000001 /* CreditTriageView.swift */; };
 		E1000015000000000000001 /* WindfallBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2000015000000000000001 /* WindfallBannerView.swift */; };
@@ -54,6 +56,7 @@
 		N1000020000000000000001 /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = N2000020000000000000001 /* ToastView.swift */; };
 		O1000021000000000000001 /* RecapTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = O2000021000000000000001 /* RecapTabView.swift */; };
 		P1000022000000000000001 /* PendingRefundsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = P2000022000000000000001 /* PendingRefundsView.swift */; };
+		PL100001000000000000001 /* PlaidLinkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = PL200001000000000000001 /* PlaidLinkManager.swift */; };
 		Q1000023000000000000001 /* ResponseCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = Q2000023000000000000001 /* ResponseCache.swift */; };
 		R1000024000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = R2000024000000000000001 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -92,6 +95,7 @@
 		C2000010000000000000001 /* SavingsGoalSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsGoalSheet.swift; sourceTree = "<group>"; };
 		C2000011000000000000001 /* TransactionEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionEditSheet.swift; sourceTree = "<group>"; };
 		C2000012000000000000001 /* GroupedCategoryPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedCategoryPicker.swift; sourceTree = "<group>"; };
+		C20000CC000000000000001 /* CarryIntentionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarryIntentionSheet.swift; sourceTree = "<group>"; };
 		D2000013000000000000001 /* SpendingDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendingDetailView.swift; sourceTree = "<group>"; };
 		E2000014000000000000001 /* CreditTriageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditTriageView.swift; sourceTree = "<group>"; };
 		E2000015000000000000001 /* WindfallBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindfallBannerView.swift; sourceTree = "<group>"; };
@@ -108,6 +112,7 @@
 		N2000020000000000000001 /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
 		O2000021000000000000001 /* RecapTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecapTabView.swift; sourceTree = "<group>"; };
 		P2000022000000000000001 /* PendingRefundsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingRefundsView.swift; sourceTree = "<group>"; };
+		PL200001000000000000001 /* PlaidLinkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidLinkManager.swift; sourceTree = "<group>"; };
 		Q2000023000000000000001 /* ResponseCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResponseCache.swift; sourceTree = "<group>"; };
 		R2000024000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -117,6 +122,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9EDF1BC32F5481D4003E2E7D /* LinkKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,6 +174,7 @@
 				A2000003000000000000001 /* APIClient.swift */,
 				A2000004000000000000001 /* AuthManager.swift */,
 				A2000005000000000000001 /* KeychainHelper.swift */,
+				PL200001000000000000001 /* PlaidLinkManager.swift */,
 				Q2000023000000000000001 /* ResponseCache.swift */,
 			);
 			path = Services;
@@ -203,6 +210,7 @@
 			children = (
 				B2000001000000000000001 /* ActivityCardView.swift */,
 				H2000019000000000000001 /* AmortizeSheet.swift */,
+				C20000CC000000000000001 /* CarryIntentionSheet.swift */,
 				L200001E000000000000001 /* CanopyMarkView.swift */,
 				C200000F000000000000001 /* CategoryTransactionsSheet.swift */,
 				C200000D000000000000001 /* FlexibleSpendingSheet.swift */,
@@ -272,6 +280,9 @@
 				Base,
 			);
 			mainGroup = A5000001000000000000001;
+			packageReferences = (
+				9EDF1BC12F5481D4003E2E7D /* XCRemoteSwiftPackageReference "plaid-link-ios" */,
+			);
 			productRefGroup = A5000003000000000000001 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -328,6 +339,7 @@
 				C1000010000000000000001 /* SavingsGoalSheet.swift in Sources */,
 				C1000011000000000000001 /* TransactionEditSheet.swift in Sources */,
 				C1000012000000000000001 /* GroupedCategoryPicker.swift in Sources */,
+				C10000CC000000000000001 /* CarryIntentionSheet.swift in Sources */,
 				D1000013000000000000001 /* SpendingDetailView.swift in Sources */,
 				E1000014000000000000001 /* CreditTriageView.swift in Sources */,
 				E1000015000000000000001 /* WindfallBannerView.swift in Sources */,
@@ -345,6 +357,7 @@
 				N1000020000000000000001 /* ToastView.swift in Sources */,
 				P1000022000000000000001 /* PendingRefundsView.swift in Sources */,
 				Q1000023000000000000001 /* ResponseCache.swift in Sources */,
+				PL100001000000000000001 /* PlaidLinkManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -560,6 +573,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9EDF1BC12F5481D4003E2E7D /* XCRemoteSwiftPackageReference "plaid-link-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/plaid/plaid-link-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.4.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9EDF1BC22F5481D4003E2E7D /* LinkKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9EDF1BC12F5481D4003E2E7D /* XCRemoteSwiftPackageReference "plaid-link-ios" */;
+			productName = LinkKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A0000001000000000000001 /* Project object */;
 }

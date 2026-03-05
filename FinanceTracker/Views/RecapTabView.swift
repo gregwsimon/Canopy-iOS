@@ -4,11 +4,22 @@ struct RecapTabView: View {
     @State private var month: String = {
         let now = Date()
         let cal = Calendar.current
+        let day = cal.component(.day, from: now)
+        if day <= 7 {
+            // First week of month: default to prior month's monthly recap
+            let prior = cal.date(byAdding: .month, value: -1, to: now)!
+            let py = cal.component(.year, from: prior)
+            let pm = cal.component(.month, from: prior)
+            return String(format: "%04d-%02d", py, pm)
+        }
         let y = cal.component(.year, from: now)
         let m = cal.component(.month, from: now)
         return String(format: "%04d-%02d", y, m)
     }()
-    @State private var recapType: String = "mid_month"
+    @State private var recapType: String = {
+        let day = Calendar.current.component(.day, from: Date())
+        return day <= 7 ? "monthly" : "mid_month"
+    }()
     @State private var recap: RecapData?
     @State private var allocations: [RecapAllocation] = []
     @State private var goalOptions: [AllocationGoalOption] = []

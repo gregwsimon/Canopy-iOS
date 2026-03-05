@@ -108,6 +108,28 @@ struct TransactionEditSheet: View {
                     }
                 }
 
+                // Scope picker — always visible
+                Section {
+                    Picker("Apply to", selection: $applyToAll) {
+                        Text("This purchase").tag(false)
+                        Text("All matching").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                } footer: {
+                    if applyToAll {
+                        Label(
+                            "Updates every transaction with this merchant name and affects future imports.",
+                            systemImage: "exclamationmark.triangle"
+                        )
+                        .font(.system(size: 11))
+                        .foregroundColor(.orange)
+                    } else {
+                        Text("Only this transaction is changed. Future purchases from this merchant are unaffected.")
+                            .font(.system(size: 11))
+                    }
+                }
+
                 // Spread action
                 if canSpread {
                     Section {
@@ -126,30 +148,6 @@ struct TransactionEditSheet: View {
                         }
                         .listRowBackground(Theme.Colors.text)
                         .foregroundColor(.white)
-                    }
-                }
-
-                // Scope picker — only shown when there are pending changes
-                if hasChanges {
-                    Section {
-                        Picker("Apply to", selection: $applyToAll) {
-                            Text("This purchase").tag(false)
-                            Text("All matching").tag(true)
-                        }
-                        .pickerStyle(.segmented)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                    } footer: {
-                        if applyToAll {
-                            Label(
-                                "Updates every transaction with this merchant name and affects future imports.",
-                                systemImage: "exclamationmark.triangle"
-                            )
-                            .font(.system(size: 11))
-                            .foregroundColor(.orange)
-                        } else {
-                            Text("Only this transaction is changed. Future purchases from this merchant are unaffected.")
-                                .font(.system(size: 11))
-                        }
                     }
                 }
 

@@ -3,7 +3,7 @@ import SwiftUI
 @main
 struct FinanceTrackerApp: App {
     @StateObject private var authManager = AuthManager()
-    @StateObject private var plaidLinkManager = PlaidLinkManager()
+
 
     init() {
         // Navigation bar
@@ -55,7 +55,6 @@ struct FinanceTrackerApp: App {
                         .environmentObject(authManager)
                 }
             }
-            .environmentObject(plaidLinkManager)
         }
     }
 }

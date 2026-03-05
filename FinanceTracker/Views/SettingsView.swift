@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var authManager: AuthManager
-    @EnvironmentObject var plaidLinkManager: PlaidLinkManager
+    @StateObject private var plaidLinkManager = PlaidLinkManager()
     @State private var accounts: [Account] = []
     @State private var plaidItems: [PlaidItem] = []
     @State private var disconnecting: String?

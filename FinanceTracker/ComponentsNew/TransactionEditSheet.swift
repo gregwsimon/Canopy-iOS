@@ -9,6 +9,8 @@ struct TransactionEditSheet: View {
     @State private var editedCategoryName: String = ""
     @State private var showCategoryPicker = false
     @State private var showAmortizeSheet = false
+    @State private var applyToAll: Bool = false
+    @State private var showAllConfirm = false
     @State private var saving = false
 
     private var hasChanges: Bool {
@@ -127,19 +129,30 @@ struct TransactionEditSheet: View {
                     }
                 }
 
-                // Info note about auto-propagation
+                // Scope picker — only shown when there are pending changes
                 if hasChanges {
                     Section {
-                        HStack(spacing: 8) {
-                            Image(systemName: "info.circle")
-                                .font(.system(size: 13))
-                                .foregroundColor(Theme.Colors.accent)
-                            Text("Changes will apply to all matching transactions and future imports")
-                                .font(.system(size: 12))
-                                .foregroundColor(Theme.Colors.textSecondary)
+                        Picker("Apply to", selection: $applyToAll) {
+                            Text("This purchase").tag(false)
+                            Text("All matching").tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    } footer: {
+                        if applyToAll {
+                            Label(
+                                "Updates every transaction with this merchant name and affects future imports.",
+                                systemImage: "exclamationmark.triangle"
+                            )
+                            .font(.system(size: 11))
+                            .foregroundColor(.orange)
+                        } else {
+                            Text("Only this transaction is changed. Future purchases from this merchant are unaffected.")
+                                .font(.system(size: 11))
                         }
                     }
                 }
+
             }
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
@@ -152,9 +165,15 @@ struct TransactionEditSheet: View {
                         .font(.system(size: 14, weight: .medium))
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") { save() }
-                        .font(.system(size: 14, weight: .semibold))
-                        .disabled(!hasChanges || saving)
+                    Button("Save") {
+                        if applyToAll {
+                            showAllConfirm = true
+                        } else {
+                            save(skipOverride: true)
+                        }
+                    }
+                    .font(.system(size: 14, weight: .semibold))
+                    .disabled(!hasChanges || saving)
                 }
             }
             .sheet(isPresented: $showCategoryPicker) {
@@ -166,6 +185,16 @@ struct TransactionEditSheet: View {
                         editedCategoryName = name
                     }
                 )
+            }
+            .confirmationDialog(
+                "Update all matching transactions?",
+                isPresented: $showAllConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Update All Matching", role: .destructive) { save(skipOverride: false) }
+                Button("Cancel", role: .cancel) { applyToAll = false }
+            } message: {
+                Text("This will also update every other transaction with the same merchant name and affect future imports.")
             }
             .sheet(isPresented: $showAmortizeSheet) {
                 AmortizeSheet(
@@ -201,7 +230,7 @@ struct TransactionEditSheet: View {
         }
     }
 
-    private func save() {
+    private func save(skipOverride: Bool = false) {
         saving = true
         Task {
             do {
@@ -212,6 +241,7 @@ struct TransactionEditSheet: View {
 
                 if descChanged { body["description"] = editedDescription }
                 if catChanged { body["category_id"] = editedCategoryId! }
+                if skipOverride { body["skip_merchant_override"] = true }
 
                 let _: OkResult = try await APIClient.shared.request(
                     "/api/transactions",

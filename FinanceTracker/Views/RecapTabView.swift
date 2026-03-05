@@ -196,6 +196,19 @@ struct RecapTabView: View {
         Button {
             if recapType != type {
                 recapType = type
+                // Auto-anchor month: Monthly → prior month, Check-In → current month
+                let cal = Calendar.current
+                let now = Date()
+                if type == "monthly" {
+                    let prior = cal.date(byAdding: .month, value: -1, to: now)!
+                    month = String(format: "%04d-%02d",
+                                   cal.component(.year, from: prior),
+                                   cal.component(.month, from: prior))
+                } else {
+                    month = String(format: "%04d-%02d",
+                                   cal.component(.year, from: now),
+                                   cal.component(.month, from: now))
+                }
                 loading = true
                 recap = nil
                 loadRecap()
